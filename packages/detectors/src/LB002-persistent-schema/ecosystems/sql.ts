@@ -6,11 +6,15 @@ import {
   type ConstructPattern,
 } from "../../shared/scanConstructs.js";
 
+// Prefixed with **/ so a migrations directory is recognized at any depth, not just at the
+// repository root — real repos commonly nest it (monorepos, examples/, services/<name>/db/...).
+// Found via real-world testing against golang-migrate/migrate's own example migrations, which
+// live under database/postgres/examples/migrations/ and were invisible to a root-only glob.
 const MIGRATION_PATH_GLOBS = [
-  "migrations/**",
-  "db/migrations/**",
-  "database/migrations/**",
-  "schema/migrations/**",
+  "**/migrations/**",
+  "**/db/migrations/**",
+  "**/database/migrations/**",
+  "**/schema/migrations/**",
 ];
 
 const PATTERNS: ConstructPattern[] = [

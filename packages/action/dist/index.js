@@ -31589,6 +31589,81 @@ function maximumSeverity(findings) {
 // ../core/dist/repository/GitRepository.js
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+
+// ../core/dist/repository/catFileBatch.js
+import { spawn } from "node:child_process";
+var GitCatFileBatch = class {
+  proc;
+  buffer = Buffer.alloc(0);
+  queue = [];
+  closed = false;
+  constructor(cwd) {
+    this.proc = spawn("git", ["cat-file", "--batch"], { cwd, stdio: ["pipe", "pipe", "ignore"] });
+    this.proc.stdout?.on("data", (chunk) => {
+      this.onData(chunk);
+    });
+    this.proc.on("error", (error52) => {
+      this.failAll(error52);
+    });
+  }
+  request(objectExpr) {
+    if (this.closed) {
+      return Promise.reject(new RepositoryError("GitCatFileBatch is closed"));
+    }
+    return new Promise((resolve, reject) => {
+      this.queue.push({ resolve, reject });
+      this.proc.stdin?.write(`${objectExpr}
+`);
+    });
+  }
+  close() {
+    if (this.closed)
+      return;
+    this.closed = true;
+    this.proc.stdin?.end();
+    this.proc.kill();
+  }
+  onData(chunk) {
+    this.buffer = Buffer.concat([this.buffer, chunk]);
+    for (; ; ) {
+      const headerEnd = this.buffer.indexOf(10);
+      if (headerEnd === -1)
+        return;
+      const header = this.buffer.subarray(0, headerEnd).toString("utf8");
+      if (header.endsWith(" missing")) {
+        this.buffer = this.buffer.subarray(headerEnd + 1);
+        this.settleNext(void 0);
+        continue;
+      }
+      const parts = header.split(" ");
+      const sizeToken = parts[parts.length - 1];
+      const size = sizeToken !== void 0 ? Number.parseInt(sizeToken, 10) : Number.NaN;
+      if (!Number.isFinite(size)) {
+        this.buffer = this.buffer.subarray(headerEnd + 1);
+        this.settleNext(void 0);
+        continue;
+      }
+      const contentStart = headerEnd + 1;
+      const contentEnd = contentStart + size;
+      if (this.buffer.length < contentEnd + 1)
+        return;
+      const content = Buffer.from(this.buffer.subarray(contentStart, contentEnd));
+      this.buffer = this.buffer.subarray(contentEnd + 1);
+      this.settleNext(content);
+    }
+  }
+  settleNext(value) {
+    const pending = this.queue.shift();
+    pending?.resolve(value);
+  }
+  failAll(error52) {
+    while (this.queue.length > 0) {
+      this.queue.shift()?.reject(error52);
+    }
+  }
+};
+
+// ../core/dist/repository/GitRepository.js
 var execFileAsync = promisify(execFile);
 var MAX_BUFFER = 64 * 1024 * 1024;
 var NUL = String.fromCharCode(0);
@@ -31615,6 +31690,16 @@ function isSafeRepoPath(path2) {
 }
 function isBinaryContent(buffer) {
   return buffer.includes(0);
+}
+function toSnapshot(buffer, maxFileBytes) {
+  if (buffer === void 0)
+    return void 0;
+  if (isBinaryContent(buffer))
+    return { binary: true, truncated: false };
+  if (maxFileBytes !== void 0 && buffer.byteLength > maxFileBytes) {
+    return { binary: false, truncated: true };
+  }
+  return { text: buffer.toString("utf8"), binary: false, truncated: false };
 }
 function parseNameStatusZ(output) {
   const tokens = output.split(NUL).filter((token) => token.length > 0);
@@ -31680,23 +31765,29 @@ var GitRepository = class _GitRepository {
       this.headRevision
     ]);
     const entries = parseNameStatusZ(raw.toString("utf8"));
-    const files = [];
-    for (const entry of entries) {
-      const before = entry.status === "added" ? void 0 : await this.readSnapshot(this.baseRevision, entry.previousPath ?? entry.path);
-      const after = entry.status === "deleted" ? void 0 : await this.readSnapshot(this.headRevision, entry.path);
-      const binary = Boolean(before?.binary) || Boolean(after?.binary);
-      const truncated = Boolean(before?.truncated) || Boolean(after?.truncated);
-      files.push({
-        path: entry.path,
-        status: entry.status,
-        ...entry.previousPath !== void 0 ? { previousPath: entry.previousPath } : {},
-        ...before?.text !== void 0 ? { before: before.text } : {},
-        ...after?.text !== void 0 ? { after: after.text } : {},
-        binary,
-        truncated
+    const batch = new GitCatFileBatch(this.root);
+    try {
+      const snapshots = await Promise.all(entries.map(async (entry) => {
+        const before = entry.status === "added" ? void 0 : await this.readSnapshotViaBatch(batch, this.baseRevision, entry.previousPath ?? entry.path);
+        const after = entry.status === "deleted" ? void 0 : await this.readSnapshotViaBatch(batch, this.headRevision, entry.path);
+        return { entry, before, after };
+      }));
+      return snapshots.map(({ entry, before, after }) => {
+        const binary = Boolean(before?.binary) || Boolean(after?.binary);
+        const truncated = Boolean(before?.truncated) || Boolean(after?.truncated);
+        return {
+          path: entry.path,
+          status: entry.status,
+          ...entry.previousPath !== void 0 ? { previousPath: entry.previousPath } : {},
+          ...before?.text !== void 0 ? { before: before.text } : {},
+          ...after?.text !== void 0 ? { after: after.text } : {},
+          binary,
+          truncated
+        };
       });
+    } finally {
+      batch.close();
     }
-    return files;
   }
   async readAt(revision, path2) {
     const snapshot = await this.readSnapshot(revision, path2);
@@ -31712,24 +31803,22 @@ var GitRepository = class _GitRepository {
       return false;
     }
   }
-  async readSnapshot(revision, path2) {
-    if (!isSafeRepoPath(path2)) {
+  async readSnapshotViaBatch(batch, revision, path2) {
+    if (!isSafeRepoPath(path2))
       return { binary: true, truncated: false };
-    }
+    const buffer = await batch.request(`${revision}:${path2}`);
+    return toSnapshot(buffer, this.options.maxFileBytes);
+  }
+  async readSnapshot(revision, path2) {
+    if (!isSafeRepoPath(path2))
+      return { binary: true, truncated: false };
     let buffer;
     try {
       buffer = await runGit(this.root, ["show", `${revision}:${path2}`]);
     } catch {
       return void 0;
     }
-    if (isBinaryContent(buffer)) {
-      return { binary: true, truncated: false };
-    }
-    const maxFileBytes = this.options.maxFileBytes;
-    if (maxFileBytes !== void 0 && buffer.byteLength > maxFileBytes) {
-      return { binary: false, truncated: true };
-    }
-    return { text: buffer.toString("utf8"), binary: false, truncated: false };
+    return toSnapshot(buffer, this.options.maxFileBytes);
   }
 };
 
@@ -49475,10 +49564,10 @@ function findRailsSchemaChanges(before, after) {
 
 // ../detectors/dist/LB002-persistent-schema/ecosystems/sql.js
 var MIGRATION_PATH_GLOBS = [
-  "migrations/**",
-  "db/migrations/**",
-  "database/migrations/**",
-  "schema/migrations/**"
+  "**/migrations/**",
+  "**/db/migrations/**",
+  "**/database/migrations/**",
+  "**/schema/migrations/**"
 ];
 var PATTERNS4 = [
   {

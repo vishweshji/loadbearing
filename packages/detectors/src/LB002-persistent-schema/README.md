@@ -22,7 +22,7 @@ statement that was already there.
 
 | Ecosystem | Location                                                          | Constructs |
 | --------- | ------------------------------------------------------------------ | ---------- |
-| SQL       | `*.sql` under `migrations/`, `db/migrations/`, `database/migrations/`, `schema/migrations/` | `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN`, `CREATE TYPE`, `CREATE INDEX`, `ALTER TABLE ... ADD CONSTRAINT` |
+| SQL       | `*.sql` under a `migrations/`, `db/migrations/`, `database/migrations/`, or `schema/migrations/` directory, at any depth (e.g. `apps/api/db/migrations/*.sql` matches) | `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN`, `CREATE TYPE`, `CREATE INDEX`, `ALTER TABLE ... ADD CONSTRAINT` |
 | Prisma    | `schema.prisma`, `**/*.prisma`                                     | new `model`, new `enum`, new field on an existing model (optional vs. required) |
 | Django    | `**/migrations/*.py`                                                | `migrations.CreateModel`, `migrations.AddField`, `migrations.AlterField` |
 | Alembic   | `**/versions/*.py`, `**/alembic/*.py`                               | `op.create_table`, `op.add_column`, `op.alter_column` |

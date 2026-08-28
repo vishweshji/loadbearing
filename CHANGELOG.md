@@ -7,6 +7,39 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Performance**: `GitRepository.changedFiles()` spawned two `git show` subprocesses per
+  changed file, sequentially — measured at ~3.3s for a 150-file PR (internal `durationMs`),
+  well over the §39 target of <2s for under 100 files, with process-spawn overhead as the
+  dominant cost, not I/O. Replaced with a single long-lived `git cat-file --batch` process
+  (`packages/core/src/repository/catFileBatch.ts`) that serves all object reads for one
+  `changedFiles()` call without a per-object spawn. Same 150-file PR now completes in ~86ms
+  (~38x), and a 500-file PR in ~240ms.
+- **LB002 SQL migration path matching**: the glob patterns (`migrations/**`,
+  `db/migrations/**`, etc.) only matched a migrations directory at a fixed prefix, so a real
+  migration nested deeper — e.g. `database/postgres/examples/migrations/*.sql`, as in
+  golang-migrate/migrate's own examples — was invisible to the detector. Every other detector's
+  path matching was already depth-independent (basename or content-based); this was an isolated
+  gap. Fixed by prefixing each pattern with `**/`. Found via real-world testing (below), not by
+  any existing test.
+
+### Verified
+
+- Ran LoadBearing against real, unmodified public repositories to check for crashes and
+  false positives/negatives beyond synthetic fixtures: `terraform-aws-modules/terraform-aws-vpc`
+  (Terraform — 28 true-positive resource findings across 141 changed files, 0 false positives,
+  60 individual commits stress-tested with 0 crashes), `GoogleCloudPlatform/microservices-demo`
+  (Kubernetes — correctly found 0 findings on a same-Deployment image-tag-only diff, correctly
+  found 5 Deployments + 5 Services at the exact real commit that added them, 80 commits
+  stress-tested with 0 crashes), `wagtail/wagtail` (Django — correctly detected a real
+  `CreateModel("APIToken")` migration, 150 commits stress-tested with 0 crashes),
+  `gin-gonic/gin` (Go — correctly flagged 2 genuinely new `go.mod` requirements while ignoring
+  version bumps and a `toolchain` directive in the same diff), `BurntSushi/ripgrep` (Rust —
+  correctly flagged a new table-syntax Cargo dependency), and `golang-migrate/migrate` (the SQL
+  path-matching bug above). This is meaningfully more confidence than the hand-built fixtures
+  alone provided.
+
 ## [0.1.0] - 2026-08-28
 
 ### Added

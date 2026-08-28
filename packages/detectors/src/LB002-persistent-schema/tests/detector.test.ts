@@ -117,6 +117,23 @@ describe("LB002 — SQL migrations", () => {
 
     expect(findings).toHaveLength(0);
   });
+
+  it("recognizes a migrations directory nested arbitrarily deep, not just at the repo root", async () => {
+    // Regression: found via real-world testing against golang-migrate/migrate, whose own
+    // example migrations live under database/postgres/examples/migrations/ — a root-only
+    // "migrations/**" glob missed this entirely.
+    const findings = await LB002.detect(
+      context([
+        file("database/postgres/examples/migrations/1385949617_create_books_table.up.sql", {
+          after: "CREATE TABLE books (\n  user_id integer,\n  name varchar(40)\n);\n",
+        }),
+      ]),
+    );
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.severity).toBe("high");
+    expect(findings[0]?.evidence[0]?.description).toContain("books");
+  });
 });
 
 describe("LB002 — Prisma", () => {

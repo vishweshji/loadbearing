@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { RepositoryError } from "../errors.js";
+import { GitCatFileBatch } from "./catFileBatch.js";
 import type { ChangedFile, ChangedFileStatus, Repository } from "./types.js";
 
 const execFileAsync = promisify(execFile);
@@ -38,6 +39,24 @@ function isSafeRepoPath(path: string): boolean {
 
 function isBinaryContent(buffer: Buffer): boolean {
   return buffer.includes(0);
+}
+
+interface Snapshot {
+  text?: string;
+  binary: boolean;
+  truncated: boolean;
+}
+
+function toSnapshot(
+  buffer: Buffer | undefined,
+  maxFileBytes: number | undefined,
+): Snapshot | undefined {
+  if (buffer === undefined) return undefined;
+  if (isBinaryContent(buffer)) return { binary: true, truncated: false };
+  if (maxFileBytes !== undefined && buffer.byteLength > maxFileBytes) {
+    return { binary: false, truncated: true };
+  }
+  return { text: buffer.toString("utf8"), binary: false, truncated: false };
 }
 
 interface NameStatusEntry {
@@ -122,31 +141,43 @@ export class GitRepository implements Repository {
     ]);
     const entries = parseNameStatusZ(raw.toString("utf8"));
 
-    const files: ChangedFile[] = [];
-    for (const entry of entries) {
-      const before =
-        entry.status === "added"
-          ? undefined
-          : await this.readSnapshot(this.baseRevision, entry.previousPath ?? entry.path);
-      const after =
-        entry.status === "deleted"
-          ? undefined
-          : await this.readSnapshot(this.headRevision, entry.path);
+    const batch = new GitCatFileBatch(this.root);
+    try {
+      const snapshots = await Promise.all(
+        entries.map(async (entry) => {
+          const before =
+            entry.status === "added"
+              ? undefined
+              : await this.readSnapshotViaBatch(
+                  batch,
+                  this.baseRevision,
+                  entry.previousPath ?? entry.path,
+                );
+          const after =
+            entry.status === "deleted"
+              ? undefined
+              : await this.readSnapshotViaBatch(batch, this.headRevision, entry.path);
+          return { entry, before, after };
+        }),
+      );
 
-      const binary = Boolean(before?.binary) || Boolean(after?.binary);
-      const truncated = Boolean(before?.truncated) || Boolean(after?.truncated);
+      return snapshots.map(({ entry, before, after }) => {
+        const binary = Boolean(before?.binary) || Boolean(after?.binary);
+        const truncated = Boolean(before?.truncated) || Boolean(after?.truncated);
 
-      files.push({
-        path: entry.path,
-        status: entry.status,
-        ...(entry.previousPath !== undefined ? { previousPath: entry.previousPath } : {}),
-        ...(before?.text !== undefined ? { before: before.text } : {}),
-        ...(after?.text !== undefined ? { after: after.text } : {}),
-        binary,
-        truncated,
+        return {
+          path: entry.path,
+          status: entry.status,
+          ...(entry.previousPath !== undefined ? { previousPath: entry.previousPath } : {}),
+          ...(before?.text !== undefined ? { before: before.text } : {}),
+          ...(after?.text !== undefined ? { after: after.text } : {}),
+          binary,
+          truncated,
+        };
       });
+    } finally {
+      batch.close();
     }
-    return files;
   }
 
   async readAt(revision: string, path: string): Promise<string | undefined> {
@@ -164,29 +195,24 @@ export class GitRepository implements Repository {
     }
   }
 
-  private async readSnapshot(
+  private async readSnapshotViaBatch(
+    batch: GitCatFileBatch,
     revision: string,
     path: string,
-  ): Promise<{ text?: string; binary: boolean; truncated: boolean } | undefined> {
-    if (!isSafeRepoPath(path)) {
-      return { binary: true, truncated: false };
-    }
+  ): Promise<Snapshot | undefined> {
+    if (!isSafeRepoPath(path)) return { binary: true, truncated: false };
+    const buffer = await batch.request(`${revision}:${path}`);
+    return toSnapshot(buffer, this.options.maxFileBytes);
+  }
+
+  private async readSnapshot(revision: string, path: string): Promise<Snapshot | undefined> {
+    if (!isSafeRepoPath(path)) return { binary: true, truncated: false };
     let buffer: Buffer;
     try {
       buffer = await runGit(this.root, ["show", `${revision}:${path}`]);
     } catch {
       return undefined;
     }
-
-    if (isBinaryContent(buffer)) {
-      return { binary: true, truncated: false };
-    }
-
-    const maxFileBytes = this.options.maxFileBytes;
-    if (maxFileBytes !== undefined && buffer.byteLength > maxFileBytes) {
-      return { binary: false, truncated: true };
-    }
-
-    return { text: buffer.toString("utf8"), binary: false, truncated: false };
+    return toSnapshot(buffer, this.options.maxFileBytes);
   }
 }
