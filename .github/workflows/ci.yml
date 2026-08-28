@@ -10,6 +10,19 @@ permissions:
   contents: read
 
 jobs:
+  lint-workflows:
+    name: lint-workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download actionlint
+        run: bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+
+      - name: Run actionlint
+        run: ./actionlint -color
+
   build-and-test:
     name: build-and-test (node ${{ matrix.node-version }})
     runs-on: ubuntu-latest

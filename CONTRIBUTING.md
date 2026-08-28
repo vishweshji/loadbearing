@@ -36,6 +36,14 @@ pnpm --filter @loadbearing/action run bundle
 git diff --exit-code packages/action/dist   # CI fails if this differs
 ```
 
+## Changing a workflow
+
+CI lints every `.github/workflows/*.yml` with [actionlint](https://github.com/rhysd/actionlint)
+(including shellcheck on inline `run:` scripts). Install it locally (`brew install actionlint`
+or see its README) and run `actionlint` from the repo root before pushing a workflow change —
+it catches invalid expressions, unknown context fields, and shell bugs that only otherwise show
+up on a live run.
+
 ## Adding a detector
 
 Built-in detectors live in `packages/detectors/src/<LBxxx-name>/` and each contain:

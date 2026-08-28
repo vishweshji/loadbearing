@@ -39,6 +39,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
   correctly flagged a new table-syntax Cargo dependency), and `golang-migrate/migrate` (the SQL
   path-matching bug above). This is meaningfully more confidence than the hand-built fixtures
   alone provided.
+- CI now runs [actionlint](https://github.com/rhysd/actionlint) (with shellcheck on inline
+  `run:` scripts) against every workflow file on every push/PR. This can't replace an actual
+  live GitHub Actions run — still not possible without a real remote — but it catches invalid
+  expressions, unknown context fields, and shell bugs statically. All four existing workflows
+  (`ci.yml`, `codeql.yml`, `release.yml`, `loadbearing.yml`) currently pass with zero findings.
 
 ## [0.1.0] - 2026-08-28
 
