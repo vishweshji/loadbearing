@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
-process.stderr.write(
-  "loadbearing: CLI commands (review/init/explain/version) are not yet implemented (Phase 3).\n",
-);
-process.exit(4);
+import { runCli } from "./cli.js";
+
+const { exitCode, stdout, stderr } = await runCli(process.argv.slice(2), process.cwd());
+
+if (stdout.length > 0) process.stdout.write(stdout);
+if (stderr.length > 0) process.stderr.write(stderr);
+
+process.exit(exitCode);

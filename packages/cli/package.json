@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@loadbearing/core": "workspace:*",
-    "@loadbearing/detectors": "workspace:*"
+    "@loadbearing/detectors": "workspace:*",
+    "commander": "^15.0.0"
   }
 }
