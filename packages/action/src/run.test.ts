@@ -36,7 +36,7 @@ function fixtureContext(overrides: { baseSha: string; headSha: string }): GitHub
 
 beforeAll(() => {
   // @actions/core's summary helper caches process.env.GITHUB_STEP_SUMMARY on first use, so the
-  // path must stay stable across tests in this file — only its contents are reset per test.
+  // path must stay stable across tests in this file - only its contents are reset per test.
   envDir = mkdtempSync(join(tmpdir(), "loadbearing-action-env-"));
   summaryFile = join(envDir, "summary.md");
   outputFile = join(envDir, "output.txt");

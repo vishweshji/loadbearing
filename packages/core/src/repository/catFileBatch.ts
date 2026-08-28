@@ -7,7 +7,7 @@ interface PendingRequest {
 }
 
 // One persistent `git cat-file --batch` process serves many `<rev>:<path>` lookups without
-// paying a process-spawn cost per object — spawning `git show` per file was the dominant cost
+// paying a process-spawn cost per object - spawning `git show` per file was the dominant cost
 // on large PRs (measured ~22ms/file, mostly process-startup overhead, not I/O).
 export class GitCatFileBatch {
   private readonly proc: ReturnType<typeof spawn>;

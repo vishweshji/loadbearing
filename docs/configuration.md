@@ -1,6 +1,6 @@
 # Configuration
 
-LoadBearing reads `.loadbearing.yml` (or `.loadbearing.yaml` — not both; having both is a
+LoadBearing reads `.loadbearing.yml` (or `.loadbearing.yaml` - not both; having both is a
 configuration error) from the repository root. If neither exists, the built-in default applies.
 
 Run `loadbearing init` to generate a starter file with comments, or `loadbearing init --force`
@@ -12,7 +12,7 @@ to overwrite an existing one.
 version: 1 # required; only 1 exists today
 
 review:
-  required_at: high # low | medium | high — findings at or above this impact require review
+  required_at: high # low | medium | high - findings at or above this impact require review
   minimum_approvals: 1 # how many qualifying approvals are needed
   require_fresh_approval: true # an approval only counts if submitted on the current head SHA
 
@@ -44,7 +44,7 @@ suppressions:
 
 ## Severity overrides are per detector, not per finding
 
-`detectors.<id>.severity` sets the severity for every finding a detector produces — it does not
+`detectors.<id>.severity` sets the severity for every finding a detector produces - it does not
 let you say "LB002's new-model findings are HIGH but its new-index findings are MEDIUM." A
 detector's own internal severity variation (LB001's runtime-vs-dev split, LB002's
 optional-vs-required-field split) is only overridden when the configured value actually differs
@@ -55,7 +55,7 @@ severities.
 
 ## Suppressions vs. `ignore.paths`
 
-`ignore.paths` excludes files from analysis entirely, for every detector — use it for vendored
+`ignore.paths` excludes files from analysis entirely, for every detector - use it for vendored
 code, fixtures, and generated files. `suppressions` is narrower: it silences one specific
 detector's findings on one specific path (a glob), and requires a `reason`, so it shows up in
 code review as a deliberate, explained decision rather than a silent carve-out.
@@ -63,7 +63,7 @@ code review as a deliberate, explained decision rather than a silent carve-out.
 ## The "no reviewers configured" trap
 
 If a HIGH finding fires but `review.reviewers.users` is empty, LoadBearing does not block
-forever with no explanation — the CLI and the Action's job summary both print the exact fix:
+forever with no explanation - the CLI and the Action's job summary both print the exact fix:
 
 ```text
 Architecture review is required, but no authorized reviewers are configured.

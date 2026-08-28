@@ -1,7 +1,7 @@
 # Detectors
 
 Version 0.1 ships five deterministic, built-in detectors. Each has its own README with full
-detail — what it detects, what it intentionally doesn't, known false positives/negatives, and
+detail - what it detects, what it intentionally doesn't, known false positives/negatives, and
 examples. This page is the index.
 
 | ID | Name | Default severity | README |
@@ -16,7 +16,7 @@ Run `loadbearing explain <id>` for the same summary from the CLI.
 
 ## Detector ID ranges
 
-Detector IDs are public API — once released, an ID is never reassigned, and a deprecated
+Detector IDs are public API - once released, an ID is never reassigned, and a deprecated
 detector keeps its ID. See [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-detector) for the
 reserved ranges (LB001–099 deterministic, LB100–199 semantic, LB200–299 architecture-graph,
 LB900–999 experimental) and for what a new detector contribution needs.
@@ -24,8 +24,8 @@ LB900–999 experimental) and for what a new detector contribution needs.
 ## What's deliberately out of scope for 0.1
 
 Every detector's own README lists its specific known false negatives, but some things are out of
-scope project-wide, not per-detector — see [MANIFESTO.md](../MANIFESTO.md). In short:
+scope project-wide, not per-detector - see [MANIFESTO.md](../MANIFESTO.md). In short:
 LoadBearing does not judge whether an architecture choice is *good*, does not scan for security
 vulnerabilities or license risk, and does not evaluate code quality or test coverage. Other
-tools already do those jobs; LoadBearing's job is narrower — identifying decisions that other
+tools already do those jobs; LoadBearing's job is narrower - identifying decisions that other
 code is likely to build upon.

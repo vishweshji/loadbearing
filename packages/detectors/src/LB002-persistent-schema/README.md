@@ -1,4 +1,4 @@
-# LB002 — Persistent Schema Change
+# LB002 - Persistent Schema Change
 
 ## What it detects
 
@@ -15,7 +15,7 @@ statement that was already there.
 - Whether the schema design itself is good (normalization, indexing strategy, naming).
 - Data migrations / backfills that don't change structure.
 - Non-persistent, in-memory, or cache-only schemas.
-- Full protocol/type-checking of the migration DSLs it scans — these are text/regex scanners
+- Full protocol/type-checking of the migration DSLs it scans - these are text/regex scanners
   "sufficient for common declarations," not compilers (see Known false negatives).
 
 ## Supported ecosystems
@@ -28,7 +28,7 @@ statement that was already there.
 | Alembic   | `**/versions/*.py`, `**/alembic/*.py`                               | `op.create_table`, `op.add_column`, `op.alter_column` |
 | Rails     | `db/migrate/**/*.rb`                                                | `create_table`, `add_column`, `change_column`, `add_reference` |
 
-No repository code is executed for any of these — Python, Ruby, and Prisma files are scanned as
+No repository code is executed for any of these - Python, Ruby, and Prisma files are scanned as
 text, not run.
 
 ## Default severity
@@ -58,11 +58,11 @@ ownership or meaning later may require migration and coordination.
   that happen to embed one of the matched keywords in a string literal or comment.
 - A Prisma field whose type merely gets a doc comment added directly above it can, in rare
   formatting, be picked up if the parser's line-based field regex misreads a comment as a field
-  — this is uncommon but possible with unusual formatting.
+  - this is uncommon but possible with unusual formatting.
 
 ## Known false negatives
 
-- SQL Server bracket-quoted identifiers (`CREATE TABLE [dbo].[Orders]`) are not matched — only
+- SQL Server bracket-quoted identifiers (`CREATE TABLE [dbo].[Orders]`) are not matched - only
   unquoted, double-quoted, single-quoted, and backtick-quoted identifiers are.
 - A schema change expressed through a raw/custom migration runner that doesn't match any of the
   supported constructs (e.g. a hand-rolled `ALTER TABLE ... ADD COLUMN` split across an

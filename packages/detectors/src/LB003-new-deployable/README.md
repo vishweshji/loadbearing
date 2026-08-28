@@ -1,4 +1,4 @@
-# LB003 — New Deployable
+# LB003 - New Deployable
 
 ## What it detects
 
@@ -9,7 +9,7 @@ The creation of a new independently deployed or independently scheduled runtime 
 - A new service entry under a Docker Compose file's `services:` key.
 - A new function entry under a Serverless Framework `functions:` key.
 
-A newly added `Dockerfile` is never flagged by itself — see below.
+A newly added `Dockerfile` is never flagged by itself - see below.
 
 ## What it intentionally does not detect
 
@@ -17,14 +17,14 @@ A newly added `Dockerfile` is never flagged by itself — see below.
   philosophy, a Dockerfile alone is evidence, not certainty: plenty of Dockerfiles exist for
   local dev images, CI tooling, or documentation examples that are never deployed as an
   independent unit. When a new Dockerfile *is* added in the same change as a new Kubernetes
-  workload or Compose service, it's attached as supporting evidence on that finding — it never
+  workload or Compose service, it's attached as supporting evidence on that finding - it never
   generates a finding on its own.
 - Modifications to an *existing* workload (image bump, resource limits, replica count). Only
   the creation of a new one is in scope.
 - Whether the deployment topology itself is sound (this is not a Kubernetes best-practices
   linter).
 - Non-Kubernetes, non-Compose, non-Serverless deployment systems (Nomad, ECS task definitions,
-  Helm charts as such, CDK/Pulumi stacks) — not yet supported; see the project roadmap.
+  Helm charts as such, CDK/Pulumi stacks) - not yet supported; see the project roadmap.
 
 ## Supported ecosystems
 
@@ -67,7 +67,7 @@ monitored, and maintained.
 
 ## Known false negatives
 
-- Helm charts (`values.yaml` + templated manifests) are not evaluated — the templates aren't
+- Helm charts (`values.yaml` + templated manifests) are not evaluated - the templates aren't
   valid YAML on their own, so this detector can't see the workload they'll eventually render.
 - A new deployable expressed through Nomad, ECS, CDK, Pulumi, or a Dockerfile alone (by design)
   is not detected in version 0.1.

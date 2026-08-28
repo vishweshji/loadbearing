@@ -14,7 +14,7 @@ export const LB003: DetectorDefinition = {
   description:
     "Detects creation of a new independently deployed or scheduled runtime unit: a Kubernetes " +
     "Deployment/StatefulSet/DaemonSet/CronJob/Job, a Docker Compose service, or a Serverless " +
-    "Framework function. A newly added Dockerfile alone is not flagged — it's included as " +
+    "Framework function. A newly added Dockerfile alone is not flagged - it's included as " +
     "supporting evidence only when a new workload also appears in the same change.",
   defaultSeverity: "high",
   supportedFiles: ["**/*.yml", "**/*.yaml", "docker-compose.yml", "serverless.yml", "Dockerfile"],

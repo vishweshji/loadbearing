@@ -34,7 +34,7 @@ describe("LB001 metadata", () => {
   });
 });
 
-describe("LB001 — package.json", () => {
+describe("LB001 - package.json", () => {
   it("flags a newly added runtime dependency (positive)", async () => {
     const findings = await LB001.detect(
       context([
@@ -113,7 +113,7 @@ describe("LB001 — package.json", () => {
   });
 });
 
-describe("LB001 — Python", () => {
+describe("LB001 - Python", () => {
   it("flags a new dependency in requirements.txt as MEDIUM", async () => {
     const findings = await LB001.detect(
       context([
@@ -191,7 +191,7 @@ describe("LB001 — Python", () => {
   });
 });
 
-describe("LB001 — Go", () => {
+describe("LB001 - Go", () => {
   it("flags a newly added go.mod requirement", async () => {
     const findings = await LB001.detect(
       context([
@@ -222,7 +222,7 @@ describe("LB001 — Go", () => {
   });
 });
 
-describe("LB001 — Rust", () => {
+describe("LB001 - Rust", () => {
   it("flags a newly added Cargo.toml runtime dependency", async () => {
     const findings = await LB001.detect(
       context([

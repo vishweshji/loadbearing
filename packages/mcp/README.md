@@ -1,8 +1,8 @@
 # @loadbearing/mcp
 
 An MCP ([Model Context Protocol](https://modelcontextprotocol.io)) server that exposes
-LoadBearing's architecture review as native tools for MCP clients — Claude Code, Cursor, Claude
-Desktop, and others — instead of the client having to shell out to the CLI.
+LoadBearing's architecture review as native tools for MCP clients - Claude Code, Cursor, Claude
+Desktop, and others - instead of the client having to shell out to the CLI.
 
 Same engine, same detectors, same policy logic as the CLI and the GitHub Action. This is a third
 front end over `@loadbearing/core` + `@loadbearing/detectors`, not a separate implementation.
@@ -11,12 +11,12 @@ front end over `@loadbearing/core` + `@loadbearing/detectors`, not a separate im
 
 ### `review`
 
-Analyzes the diff between two git revisions in a repository and reports architectural impact —
+Analyzes the diff between two git revisions in a repository and reports architectural impact -
 the same output as `loadbearing review`.
 
 | Input | Required | Default | Description |
 | --- | --- | --- | --- |
-| `path` | yes | — | Absolute path to the git repository to analyze |
+| `path` | yes | - | Absolute path to the git repository to analyze |
 | `base` | no | `HEAD~1` | Base revision to diff from |
 | `head` | no | `HEAD` | Head revision to diff to |
 | `config` | no | repo's own `.loadbearing.yml` | Path to a config file override |
@@ -42,7 +42,7 @@ Cursor or Claude Code specifically.
 ## Why a separate front end instead of wrapping the CLI
 
 `@loadbearing/mcp` depends only on `@loadbearing/core` and `@loadbearing/detectors`, the same as
-`@loadbearing/cli` and `@loadbearing/action` — it does not depend on the CLI package. This keeps
+`@loadbearing/cli` and `@loadbearing/action` - it does not depend on the CLI package. This keeps
 the dependency graph the same shape it already was (see [ARCHITECTURE.md](../../ARCHITECTURE.md)):
 core and detectors are the shared foundation, and CLI/Action/MCP are three independent,
 equally-privileged consumers of it.

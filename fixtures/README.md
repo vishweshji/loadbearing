@@ -1,6 +1,6 @@
 # Golden fixtures
 
-This is LoadBearing's fixture corpus — real before/after repository states with an expected
+This is LoadBearing's fixture corpus - real before/after repository states with an expected
 result, run by `packages/detectors/src/fixtureRunner.test.ts` against the actual built-in
 detectors and engine (via `pnpm test`). It's organized by category, not by detector, since it
 doubles as a language-agnostic, contributor-friendly benchmark: adding a fixture here needs no
@@ -13,7 +13,7 @@ fixtures/
   deployables/     LB003
   contracts/       LB004
   infrastructure/  LB005
-  clean/           negative cases — PRs that should produce no findings at all
+  clean/           negative cases - PRs that should produce no findings at all
 ```
 
 ## Adding a fixture
@@ -23,9 +23,9 @@ Create a new directory under the right category, containing:
 ```text
 <category>/<fixture-name>/
   fixture.yml
-  before/   — the repository state before the change (can be a single file, or omitted entirely
+  before/   - the repository state before the change (can be a single file, or omitted entirely
               if the fixture starts from nothing)
-  after/    — the repository state after the change
+  after/    - the repository state after the change
 ```
 
 `fixture.yml`:
@@ -46,12 +46,12 @@ expected:
         - customer_identity # or one of its evidence entries' descriptions
 ```
 
-`before/` and `after/` are plain directory trees, not git repositories — the runner diffs them
+`before/` and `after/` are plain directory trees, not git repositories - the runner diffs them
 directly (added/removed/modified by file content) using
 `packages/detectors/src/testing/DirectoryRepository.ts`, so no git commands or temporary
 repositories are needed to add a fixture.
 
-This is the seed corpus, not a complete one — see
+This is the seed corpus, not a complete one - see
 [docs/contributing-detectors.md](../docs/contributing-detectors.md) for the broader test
 philosophy (positive/negative/near-miss/modification/deletion cases), most of which currently
 live as inline Vitest fixtures per detector rather than here. Adding real-world examples here,

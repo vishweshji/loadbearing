@@ -33,7 +33,7 @@ describe("LB005 metadata", () => {
   });
 });
 
-describe("LB005 — Terraform", () => {
+describe("LB005 - Terraform", () => {
   it("flags a new resource block regardless of type (positive)", async () => {
     const findings = await LB005.detect(
       context([
@@ -89,7 +89,7 @@ describe("LB005 — Terraform", () => {
   });
 });
 
-describe("LB005 — Kubernetes infrastructure", () => {
+describe("LB005 - Kubernetes infrastructure", () => {
   it("flags a new Service", async () => {
     const findings = await LB005.detect(
       context([
@@ -122,7 +122,7 @@ describe("LB005 — Kubernetes infrastructure", () => {
   });
 });
 
-describe("LB005 — CloudFormation", () => {
+describe("LB005 - CloudFormation", () => {
   it("flags a new resource under Resources:", async () => {
     const before = "Resources:\n  Bucket:\n    Type: AWS::S3::Bucket\n";
     const after =

@@ -1,7 +1,7 @@
 # Contributing to LoadBearing
 
 Thanks for considering a contribution. LoadBearing is a young project with a deliberately narrow
-scope — see [MANIFESTO.md](./MANIFESTO.md) and [ARCHITECTURE.md](./ARCHITECTURE.md) before
+scope - see [MANIFESTO.md](./MANIFESTO.md) and [ARCHITECTURE.md](./ARCHITECTURE.md) before
 proposing anything that expands what the tool does.
 
 ## Development setup
@@ -27,7 +27,7 @@ All four must pass before a pull request is merged.
 
 ## Working on the GitHub Action
 
-`packages/action/dist/index.js` is a committed, bundled artifact — GitHub Actions runs it
+`packages/action/dist/index.js` is a committed, bundled artifact - GitHub Actions runs it
 directly and never installs dependencies. After changing anything under `packages/action/src/`,
 regenerate it and commit the result:
 
@@ -40,7 +40,7 @@ git diff --exit-code packages/action/dist   # CI fails if this differs
 
 CI lints every `.github/workflows/*.yml` with [actionlint](https://github.com/rhysd/actionlint)
 (including shellcheck on inline `run:` scripts). Install it locally (`brew install actionlint`
-or see its README) and run `actionlint` from the repo root before pushing a workflow change —
+or see its README) and run `actionlint` from the repo root before pushing a workflow change -
 it catches invalid expressions, unknown context fields, and shell bugs that only otherwise show
 up on a live run.
 
@@ -85,7 +85,7 @@ Whenever you fix a false positive:
 
 The easiest meaningful contribution to LoadBearing is often just a fixture. If LoadBearing
 incorrectly flags or misses an architectural change, reducing the example to a reproducible
-fixture is extremely valuable, even without a code fix attached — see
+fixture is extremely valuable, even without a code fix attached - see
 [fixtures/README.md](./fixtures/README.md) for the golden-fixture format, which needs no
 TypeScript: just a `fixture.yml` and two directories.
 
@@ -100,5 +100,5 @@ copyright-assignment CLA.
 - Keep the scope of a PR matched to the issue it addresses.
 - Include or update fixtures for any detector behavior change.
 - Update the relevant detector `README.md` if behavior changes.
-- Don't introduce network calls, code execution of repository content, or telemetry — see
+- Don't introduce network calls, code execution of repository content, or telemetry - see
   [SECURITY.md](./SECURITY.md).

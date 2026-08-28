@@ -20,7 +20,7 @@ security fixes.
 
 Please use [GitHub's private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability)
 on this repository rather than opening a public issue. If private reporting is unavailable to
-you, open a minimal public issue asking a maintainer to open a private channel — do not include
+you, open a minimal public issue asking a maintainer to open a private channel - do not include
 exploit details in that issue.
 
 Do not publicly disclose a vulnerability, including proof-of-concept exploit details, before a

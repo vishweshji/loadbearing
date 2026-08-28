@@ -46,7 +46,7 @@ settings once you're happy with how it behaves on real PRs.
 ## Why `pull_request_review` matters
 
 When architecture review is required, the check fails on `pull_request`. When an authorized
-reviewer approves, GitHub fires a `pull_request_review` event — which re-runs this same
+reviewer approves, GitHub fires a `pull_request_review` event - which re-runs this same
 workflow, re-evaluates the same PR, sees the qualifying approval, and turns the check green.
 No LoadBearing server is involved; the whole loop is two GitHub Actions runs.
 
@@ -63,7 +63,7 @@ PR opened → LoadBearing analyzes → HIGH impact → check FAILS
 ```
 
 A later commit invalidates a prior approval whenever `require_fresh_approval: true` (the
-default) — the next `pull_request` (`synchronize`) run will fail again until re-approved.
+default) - the next `pull_request` (`synchronize`) run will fail again until re-approved.
 
 ## Why the checkout ref matters
 
@@ -75,14 +75,14 @@ fetches `refs/pull/<number>/head` itself before analyzing.
 ## Permissions
 
 The Action needs only `contents: read` and `pull-requests: read`. It never requests
-`pull-requests: write` — reading PR reviews to evaluate whether approval requirements are met
+`pull-requests: write` - reading PR reviews to evaluate whether approval requirements are met
 doesn't require writing anything back. A future optional mode may request reviewers
 automatically using write permission, but merge enforcement will never depend on it.
 
 ## Fork PRs
 
 The workflow runs on `pull_request`, never `pull_request_target`, and requires no repository
-secrets — `github.token`'s default permissions are sufficient to read PR reviews. This matters
+secrets - `github.token`'s default permissions are sufficient to read PR reviews. This matters
 because LoadBearing itself is open source: contributors will open PRs from forks against
 `loadbearing-dev/loadbearing`, and a `pull_request_target`-based workflow would run with
 elevated, secret-bearing permissions against untrusted fork content, which this project
@@ -99,5 +99,5 @@ deliberately avoids for any repository using it.
 
 Every run writes a Markdown job summary (impact, the findings table, evidence, approval status)
 and emits inline annotations on the changed files (`::error` for HIGH findings, `::warning`
-otherwise). LoadBearing does not post a PR comment by default, to avoid bot spam — the job
+otherwise). LoadBearing does not post a PR comment by default, to avoid bot spam - the job
 summary and annotations are the primary surface.

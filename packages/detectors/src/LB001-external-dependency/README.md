@@ -1,8 +1,8 @@
-# LB001 — New External Dependency
+# LB001 - New External Dependency
 
 ## What it detects
 
-The introduction of a new direct dependency in a package manifest — a dependency name that
+The introduction of a new direct dependency in a package manifest - a dependency name that
 appears in the manifest after the change but did not appear in it before. A version bump on an
 already-present dependency is not flagged; only new packages are.
 
@@ -11,7 +11,7 @@ already-present dependency is not flagged; only new packages are.
 - Version upgrades/downgrades of an existing dependency.
 - Transitive/lockfile-only changes (`package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`,
   `Cargo.lock`, `go.sum`, ...). Only manifests are inspected.
-- Whether the dependency itself is trustworthy, secure, or well-maintained — that's a job for a
+- Whether the dependency itself is trustworthy, secure, or well-maintained - that's a job for a
   dependency/vulnerability scanner, not LoadBearing.
 - Removal of a dependency.
 
@@ -64,4 +64,4 @@ ecosystem.
   `pyproject.toml` in the same PR) is reported as both "removed" (silently, since removals
   aren't flagged) and "added" rather than recognized as a migration.
 - Lockfile-only additions (a transitive dependency newly pinned directly) are not detected,
-  by design — see "what it intentionally does not detect" above.
+  by design - see "what it intentionally does not detect" above.

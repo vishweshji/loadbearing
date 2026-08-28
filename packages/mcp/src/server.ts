@@ -23,7 +23,7 @@ export function createServer(): McpServer {
       title: "Review architectural impact",
       description:
         "Analyze the diff between two git revisions in a repository and report whether it " +
-        "introduces a consequential architectural decision — a new external dependency, a " +
+        "introduces a consequential architectural decision - a new external dependency, a " +
         "persistent schema change, a new deployable, a public contract change, or new " +
         "infrastructure. Call this before committing or opening a pull request to catch " +
         "high-impact changes early, the same way the LoadBearing CLI or GitHub Action would. " +

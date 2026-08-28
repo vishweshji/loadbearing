@@ -1,4 +1,4 @@
-# LB004 — Public Contract Change
+# LB004 - Public Contract Change
 
 ## What it detects
 
@@ -14,7 +14,7 @@ Changes to an interface other components, clients, or organizations may already 
 - Whether a change is actually *breaking* in the semver/wire-compatibility sense. A contract
   change is reported as a change; it is not labeled "breaking" unless that's proven, per the
   project's evidence-before-opinion principle.
-- Full protocol compatibility analysis for Protobuf (field number reuse, wire-type changes) —
+- Full protocol compatibility analysis for Protobuf (field number reuse, wire-type changes) -
   the purpose here is architectural visibility, not a compiler.
 - AsyncAPI documents or ad hoc JSON Schema files. These are listed as future ecosystem work; see
   the detector's `description` field and the project roadmap.
@@ -44,7 +44,7 @@ endpoint removed            HIGH
 shared schema modified      HIGH
 ```
 
-Protobuf and GraphQL changes are `HIGH` uniformly — the spec gives no differentiated severity
+Protobuf and GraphQL changes are `HIGH` uniformly - the spec gives no differentiated severity
 tier for those formats the way it does for OpenAPI.
 
 ## Example

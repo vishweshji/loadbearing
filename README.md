@@ -13,7 +13,7 @@ whether code is *correct*. LoadBearing asks a different question:
 > **Did this pull request make a decision that deserves human attention before we build on top
 > of it?**
 
-It's a local-first, no-account, deterministic architecture gate — a CLI, a GitHub Action, and an
+It's a local-first, no-account, deterministic architecture gate - a CLI, a GitHub Action, and an
 MCP server for AI coding agents, all running the same engine. Most PRs pass silently. When one
 introduces something consequential, LoadBearing says exactly what and why, in plain evidence, and
 can require a human sign-off before merge.
@@ -40,7 +40,7 @@ Architecture review required.
 
 ## Contents
 
-- [Get started](#get-started) — [GitHub Action](#github-action) · [CLI](#cli) · [AI coding agent](#ai-coding-agent-cursor-claude-code)
+- [Get started](#get-started) - [GitHub Action](#github-action) · [CLI](#cli) · [AI coding agent](#ai-coding-agent-cursor-claude-code)
 - [What it detects](#what-it-detects)
 - [Configuration](#configuration)
 - [How it works](#how-it-works)
@@ -51,7 +51,7 @@ Architecture review required.
 
 ## Get started
 
-Pick whichever matches how your team works — they all run the same detectors and policy engine,
+Pick whichever matches how your team works - they all run the same detectors and policy engine,
 so results are identical across all three.
 
 ### GitHub Action
@@ -97,7 +97,7 @@ review:
       - your-github-name
 ```
 
-That's it — no signup, no dashboard, no token beyond the one GitHub already gives every
+That's it - no signup, no dashboard, no token beyond the one GitHub already gives every
 workflow run. See [docs/github.md](./docs/github.md) for how the approve → re-commit →
 re-approve check lifecycle works, and [docs/configuration.md](./docs/configuration.md) for the
 full `.loadbearing.yml` reference.
@@ -107,7 +107,7 @@ full `.loadbearing.yml` reference.
 For local checks, other CI systems, or scripting.
 
 ```bash
-pnpm add -D @loadbearing/cli   # or npm/yarn — once published, see Status below
+pnpm add -D @loadbearing/cli   # or npm/yarn - once published, see Status below
 loadbearing review --base origin/main --head HEAD
 ```
 
@@ -147,14 +147,14 @@ tools, so an agent calls them directly instead of shelling out and parsing text.
 }
 ```
 
-Then tell the agent when to reach for it — a ready-to-paste `CLAUDE.md`/`.cursorrules` snippet,
+Then tell the agent when to reach for it - a ready-to-paste `CLAUDE.md`/`.cursorrules` snippet,
 plus a pre-commit hook pattern for agents without MCP support, is in
 [docs/agents.md](./docs/agents.md).
 
 ## What it detects
 
 Five deterministic detectors, each with its own evidence and default severity. No AI, no
-network access — every finding is a construct LoadBearing can point to in your diff.
+network access - every finding is a construct LoadBearing can point to in your diff.
 
 | ID | Detects | Default severity |
 | --- | --- | --- |
@@ -165,7 +165,7 @@ network access — every finding is a construct LoadBearing can point to in your
 | [LB005](./packages/detectors/src/LB005-infrastructure-resource/README.md) | A new infrastructure resource (Terraform, Kubernetes infra objects, CloudFormation/SAM) | HIGH |
 
 A version bump, a modification to something that already existed, or a near-miss (the same
-keyword appearing in a comment or unrelated file) does not fire — see each detector's README for
+keyword appearing in a comment or unrelated file) does not fire - see each detector's README for
 what it deliberately does *not* flag, and [docs/detectors.md](./docs/detectors.md) for the index.
 
 ## Configuration
@@ -202,8 +202,8 @@ detectors on). Full reference: [docs/configuration.md](./docs/configuration.md).
 
 LoadBearing diffs two git revisions using three-dot (`merge-base`) semantics, so a change already
 merged into your base branch after your PR diverged is never attributed to your PR. Each enabled
-detector inspects only the changed files relevant to it and returns findings with evidence — a
-file, a line, a matched construct — never an opaque score. Detection and policy are separate: a
+detector inspects only the changed files relevant to it and returns findings with evidence - a
+file, a line, a matched construct - never an opaque score. Detection and policy are separate: a
 detector says what happened, the policy engine (severity thresholds, suppressions, approval
 freshness) decides what that means for this repository.
 
@@ -235,7 +235,7 @@ over stdio. Nothing here calls out to anything you didn't already trust with you
 | [docs/github.md](./docs/github.md) | GitHub Action setup, permissions, the approval lifecycle |
 | [docs/agents.md](./docs/agents.md) | MCP setup, `CLAUDE.md`/`.cursorrules`, pre-commit hooks |
 | [docs/contributing-detectors.md](./docs/contributing-detectors.md) | Writing a new detector |
-| [fixtures/README.md](./fixtures/README.md) | The golden-fixture corpus — the easiest way to contribute |
+| [fixtures/README.md](./fixtures/README.md) | The golden-fixture corpus - the easiest way to contribute |
 | [docs/roadmap.md](./docs/roadmap.md) | What's built, what's next, explicit non-goals |
 | [SECURITY.md](./SECURITY.md) | Threat model and how to report a vulnerability |
 
@@ -243,7 +243,7 @@ over stdio. Nothing here calls out to anything you didn't already trust with you
 
 Version 0.1.0: the CLI, all five detectors, the GitHub Action (including conditional approval),
 and the MCP server are implemented and tested (177 tests). This repository doesn't have a GitHub
-remote yet, so it hasn't been through a real release, a live PR, or an npm publish — see
+remote yet, so it hasn't been through a real release, a live PR, or an npm publish - see
 [CHANGELOG.md](./CHANGELOG.md) for exactly what's shipped.
 
 ## Contributing
@@ -251,7 +251,7 @@ remote yet, so it hasn't been through a real release, a live PR, or an npm publi
 See [CONTRIBUTING.md](./CONTRIBUTING.md). The easiest meaningful contribution to LoadBearing is
 often just a fixture: if LoadBearing incorrectly flags or misses an architectural change,
 reducing the example to a reproducible fixture in [`fixtures/`](./fixtures/README.md) is
-extremely valuable, even without a code fix attached — no TypeScript required.
+extremely valuable, even without a code fix attached - no TypeScript required.
 
 ## License
 

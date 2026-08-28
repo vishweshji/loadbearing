@@ -33,7 +33,7 @@ describe("LB002 metadata", () => {
   });
 });
 
-describe("LB002 — SQL migrations", () => {
+describe("LB002 - SQL migrations", () => {
   it("flags CREATE TABLE in a migration directory (positive)", async () => {
     const findings = await LB002.detect(
       context([
@@ -120,7 +120,7 @@ describe("LB002 — SQL migrations", () => {
 
   it("recognizes a migrations directory nested arbitrarily deep, not just at the repo root", async () => {
     // Regression: found via real-world testing against golang-migrate/migrate, whose own
-    // example migrations live under database/postgres/examples/migrations/ — a root-only
+    // example migrations live under database/postgres/examples/migrations/ - a root-only
     // "migrations/**" glob missed this entirely.
     const findings = await LB002.detect(
       context([
@@ -136,7 +136,7 @@ describe("LB002 — SQL migrations", () => {
   });
 });
 
-describe("LB002 — Prisma", () => {
+describe("LB002 - Prisma", () => {
   it("flags a new model as HIGH", async () => {
     const findings = await LB002.detect(
       context([
@@ -175,7 +175,7 @@ describe("LB002 — Prisma", () => {
   });
 });
 
-describe("LB002 — Django", () => {
+describe("LB002 - Django", () => {
   it("flags migrations.CreateModel", async () => {
     const findings = await LB002.detect(
       context([
@@ -202,7 +202,7 @@ describe("LB002 — Django", () => {
   });
 });
 
-describe("LB002 — Alembic", () => {
+describe("LB002 - Alembic", () => {
   it("flags op.create_table", async () => {
     const findings = await LB002.detect(
       context([
@@ -217,7 +217,7 @@ describe("LB002 — Alembic", () => {
   });
 });
 
-describe("LB002 — Rails", () => {
+describe("LB002 - Rails", () => {
   it("flags create_table under db/migrate", async () => {
     const findings = await LB002.detect(
       context([

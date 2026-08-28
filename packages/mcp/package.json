@@ -1,7 +1,7 @@
 {
   "name": "@loadbearing/mcp",
   "version": "0.1.0",
-  "description": "LoadBearing MCP server — exposes architecture review as tools for Claude Code, Cursor, and other MCP clients.",
+  "description": "LoadBearing MCP server - exposes architecture review as tools for Claude Code, Cursor, and other MCP clients.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",

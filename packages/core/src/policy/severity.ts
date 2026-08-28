@@ -8,7 +8,7 @@ export function severityRank(severity: Severity): number {
 }
 
 // Only a configured severity that differs from the detector's own default counts as an
-// override — otherwise the default config (which always writes that same value) would flatten
+// override - otherwise the default config (which always writes that same value) would flatten
 // detectors that vary severity per finding, like LB001's runtime-vs-dev split.
 export function effectiveSeverity(
   finding: Finding,

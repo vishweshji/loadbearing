@@ -49796,7 +49796,7 @@ function isYamlPath(path2) {
 var LB003 = {
   id: "LB003",
   name: "New Deployable",
-  description: "Detects creation of a new independently deployed or scheduled runtime unit: a Kubernetes Deployment/StatefulSet/DaemonSet/CronJob/Job, a Docker Compose service, or a Serverless Framework function. A newly added Dockerfile alone is not flagged \u2014 it's included as supporting evidence only when a new workload also appears in the same change.",
+  description: "Detects creation of a new independently deployed or scheduled runtime unit: a Kubernetes Deployment/StatefulSet/DaemonSet/CronJob/Job, a Docker Compose service, or a Serverless Framework function. A newly added Dockerfile alone is not flagged - it's included as supporting evidence only when a new workload also appears in the same change.",
   defaultSeverity: "high",
   supportedFiles: ["**/*.yml", "**/*.yaml", "docker-compose.yml", "serverless.yml", "Dockerfile"],
   async detect(context3) {
@@ -50450,7 +50450,7 @@ function renderJobSummary(result) {
   }
   lines.push("## Evidence", "");
   for (const finding2 of findings) {
-    lines.push(`### ${finding2.detectorId} \u2014 ${finding2.title}`, "");
+    lines.push(`### ${finding2.detectorId} - ${finding2.title}`, "");
     for (const evidence of finding2.evidence) {
       const location = evidence.line !== void 0 ? `${evidence.file}:${evidence.line}` : evidence.file;
       lines.push(`\`${location}\``, "", evidence.description, "");

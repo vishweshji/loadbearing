@@ -33,7 +33,7 @@ describe("LB003 metadata", () => {
   });
 });
 
-describe("LB003 — Kubernetes", () => {
+describe("LB003 - Kubernetes", () => {
   it("flags a new Deployment (positive)", async () => {
     const findings = await LB003.detect(
       context([
@@ -108,14 +108,14 @@ describe("LB003 — Kubernetes", () => {
   });
 });
 
-describe("LB003 — Dockerfile alone", () => {
+describe("LB003 - Dockerfile alone", () => {
   it("does not flag a bare new Dockerfile with no accompanying workload", async () => {
     const findings = await LB003.detect(context([file("Dockerfile")]));
     expect(findings).toHaveLength(0);
   });
 });
 
-describe("LB003 — Docker Compose", () => {
+describe("LB003 - Docker Compose", () => {
   it("flags a newly added compose service", async () => {
     const findings = await LB003.detect(
       context([
@@ -143,7 +143,7 @@ describe("LB003 — Docker Compose", () => {
   });
 });
 
-describe("LB003 — Serverless", () => {
+describe("LB003 - Serverless", () => {
   it("flags a new function as MEDIUM", async () => {
     const findings = await LB003.detect(
       context([

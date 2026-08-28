@@ -36,7 +36,7 @@ afterEach(async () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-describe("MCP server — review tool", () => {
+describe("MCP server - review tool", () => {
   it("lists review and explain among the available tools", async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name);
@@ -90,7 +90,7 @@ describe("MCP server — review tool", () => {
   });
 });
 
-describe("MCP server — explain tool", () => {
+describe("MCP server - explain tool", () => {
   it("returns detector metadata for a known ID", async () => {
     const result = await client.callTool({ name: "explain", arguments: { detectorId: "LB001" } });
     const content = result.content as Array<{ type: string; text: string }>;

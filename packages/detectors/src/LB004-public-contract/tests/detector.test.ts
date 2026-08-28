@@ -54,7 +54,7 @@ describe("LB004 metadata", () => {
   });
 });
 
-describe("LB004 — OpenAPI", () => {
+describe("LB004 - OpenAPI", () => {
   it("flags a new endpoint as MEDIUM (positive)", async () => {
     const after = BASE_OPENAPI.replace(
       "paths:\n  /customers:",
@@ -122,7 +122,7 @@ describe("LB004 — OpenAPI", () => {
   });
 });
 
-describe("LB004 — Protobuf", () => {
+describe("LB004 - Protobuf", () => {
   it("flags a new message and a new rpc-carrying service", async () => {
     const findings = await LB004.detect(
       context([
@@ -159,7 +159,7 @@ describe("LB004 — Protobuf", () => {
   });
 });
 
-describe("LB004 — GraphQL", () => {
+describe("LB004 - GraphQL", () => {
   it("flags a new type", async () => {
     const findings = await LB004.detect(
       context([

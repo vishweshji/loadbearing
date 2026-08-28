@@ -15,7 +15,7 @@ More precisely:
 - `core` cannot depend on `detectors`.
 - `core` cannot depend on GitHub (no Octokit, no `@actions/*`).
 - `detectors` cannot depend on `cli`, `action`, or `mcp`.
-- `cli`, `action`, and `mcp` cannot depend on each other — they are three independent,
+- `cli`, `action`, and `mcp` cannot depend on each other - they are three independent,
   equally-privileged front ends over `core` + `detectors`, not layered on one another.
 
 This is enforced by pnpm workspace dependency declarations (a package can only import what it
@@ -55,17 +55,17 @@ Actions output (annotations, job summary), and Action inputs.
 
 ### `@loadbearing/mcp`
 
-Depends on `@loadbearing/core` and `@loadbearing/detectors` — not on `@loadbearing/cli`, even
+Depends on `@loadbearing/core` and `@loadbearing/detectors` - not on `@loadbearing/cli`, even
 though its `review` tool overlaps with the CLI's `review` command; both are independent, thin
 front ends over the same engine rather than one wrapping the other. Exposes `review` and
-`explain` as MCP tools over stdio for Claude Code, Cursor, and other MCP clients — see
+`explain` as MCP tools over stdio for Claude Code, Cursor, and other MCP clients - see
 [docs/agents.md](./docs/agents.md).
 
 ## Core engine
 
 `GitRepository` computes changed files between a base and head revision. Per the project's own
-review discipline, this must use three-dot (`merge-base`) semantics — diffing against
-`merge-base(base, head)`, not `base` directly — so that changes already merged into the base
+review discipline, this must use three-dot (`merge-base`) semantics - diffing against
+`merge-base(base, head)`, not `base` directly - so that changes already merged into the base
 branch after the PR diverged are never attributed to the PR.
 
 Detectors receive a `DetectorContext` built from the changed-file set and produce zero or more

@@ -29,7 +29,7 @@ remain responsible for making those decisions.
 AI systems can produce excellent architectural explanations. That creates a risk: engineers may
 outsource understanding of their own design to the agent that wrote it. LoadBearing does not
 auto-generate an ADR and ask the engineer to rubber-stamp it. When review is required, the
-engineer answers what decision they're making and what becomes hard to change afterward — in
+engineer answers what decision they're making and what becomes hard to change afterward - in
 their own words.
 
 ## Evidence before opinion
@@ -40,8 +40,8 @@ construct. A detector may interpret evidence. It may not invent it.
 ## Deterministic first, semantic later
 
 Version 0.1 works without AI. The first detectors are deterministic and inspect repository
-changes directly. Semantic reasoning for decisions that can't be identified syntactically —
-shared abstractions, new sources of truth, cross-domain coupling — is a later, optional layer.
+changes directly. Semantic reasoning for decisions that can't be identified syntactically -
+shared abstractions, new sources of truth, cross-domain coupling - is a later, optional layer.
 The deterministic core remains useful permanently.
 
 ## False positives are expensive

@@ -70,4 +70,4 @@ jobs:
   # npm publication is intentionally not part of this workflow. Per LOADBEARING.md §31, the
   # bundled packages/action/dist/index.js means npm publication is never required for the
   # GitHub Action to work. Add an npm-publish job only once package names are deliberately
-  # reserved and an NPM_TOKEN secret is configured — see docs/roadmap.md.
+  # reserved and an NPM_TOKEN secret is configured - see docs/roadmap.md.

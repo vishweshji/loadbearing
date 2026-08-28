@@ -62,7 +62,7 @@ export function renderJobSummary(result: ReviewResult): string {
 
   lines.push("## Evidence", "");
   for (const finding of findings) {
-    lines.push(`### ${finding.detectorId} — ${finding.title}`, "");
+    lines.push(`### ${finding.detectorId} - ${finding.title}`, "");
     for (const evidence of finding.evidence) {
       const location =
         evidence.line !== undefined ? `${evidence.file}:${evidence.line}` : evidence.file;

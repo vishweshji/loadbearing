@@ -1,11 +1,11 @@
-# LB005 — Infrastructure Resource
+# LB005 - Infrastructure Resource
 
 ## What it detects
 
 Introduction of persistent or operational infrastructure:
 
 - A Terraform `resource "TYPE" "NAME" { ... }` block that didn't exist before, for **any**
-  resource type — there is no hardcoded list of Terraform resource types to keep up to date.
+  resource type - there is no hardcoded list of Terraform resource types to keep up to date.
 - A Kubernetes `Service`, `Ingress`, `PersistentVolume`, `PersistentVolumeClaim`,
   `NetworkPolicy`, `Role`, `ClusterRole`, `RoleBinding`, or `ClusterRoleBinding` object that
   didn't exist before.
@@ -16,14 +16,14 @@ Introduction of persistent or operational infrastructure:
 - Modifications to an *existing* resource (a Terraform resource's arguments changing, a
   Service's port changing). Only creation is in scope.
 - Whether the resource choice itself is appropriate (cloud provider, instance size, IAM scope).
-- Terraform `data` sources, `variable`, `output`, or `module` blocks — only `resource` blocks.
+- Terraform `data` sources, `variable`, `output`, or `module` blocks - only `resource` blocks.
 - Pulumi, AWS CDK, or other infrastructure-as-code systems that don't declare resources in a
   statically parseable resource-per-block form.
 
 ## Overlap with LB003
 
 A Kubernetes `Service` fronting a newly introduced `Deployment` in the same change will
-legitimately produce two separate findings — one from LB003 (the new workload) and one from
+legitimately produce two separate findings - one from LB003 (the new workload) and one from
 this detector (the new Service). That's intentional, not a bug: a workload and its
 infrastructure are two different architectural decisions, per §19 of the spec this detector
 implements.
@@ -38,7 +38,7 @@ implements.
 
 ## Default severity
 
-`HIGH` for every match — the spec gives no differentiated tier for this detector.
+`HIGH` for every match - the spec gives no differentiated tier for this detector.
 
 ## Example
 

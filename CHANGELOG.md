@@ -12,7 +12,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - The §37 golden-fixture format and runner: `fixture.yml` (name, base/head directory names,
   expected impact and findings with substring `contains` matching) plus two plain directory
   trees, evaluated by `packages/detectors/src/fixtureRunner.test.ts` against the real built-in
-  detectors and engine via a new `DirectoryRepository` (diffs two directories directly — no
+  detectors and engine via a new `DirectoryRepository` (diffs two directories directly - no
   temporary git repository needed per fixture). Fixtures live at the repo root under `fixtures/`
   organized by category (`dependencies`, `schemas`, `deployables`, `contracts`, `infrastructure`,
   `clean`) per §30, doubling as a contributor-friendly, TypeScript-free corpus rather than
@@ -26,7 +26,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   depend on `@loadbearing/cli`), matching the existing cli/action package-boundary shape.
   Verified both via an in-memory client/server transport (6 tests) and, manually, the actual
   stdio subprocess a real MCP client would spawn.
-- `docs/agents.md`: how to wire LoadBearing into an AI coding agent — MCP config for Claude Code
+- `docs/agents.md`: how to wire LoadBearing into an AI coding agent - MCP config for Claude Code
   and Cursor, a `CLAUDE.md`/`.cursorrules` snippet steering the agent to check architecture
   impact before committing (and explicitly *not* to resolve a HIGH/MEDIUM finding itself by
   editing config, adding a suppression, or self-approving), a pre-commit hook pattern, and exit
@@ -41,7 +41,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   regression test for it.
 
 - **Performance**: `GitRepository.changedFiles()` spawned two `git show` subprocesses per
-  changed file, sequentially — measured at ~3.3s for a 150-file PR (internal `durationMs`),
+  changed file, sequentially - measured at ~3.3s for a 150-file PR (internal `durationMs`),
   well over the §39 target of <2s for under 100 files, with process-spawn overhead as the
   dominant cost, not I/O. Replaced with a single long-lived `git cat-file --batch` process
   (`packages/core/src/repository/catFileBatch.ts`) that serves all object reads for one
@@ -49,8 +49,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (~38x), and a 500-file PR in ~240ms.
 - **LB002 SQL migration path matching**: the glob patterns (`migrations/**`,
   `db/migrations/**`, etc.) only matched a migrations directory at a fixed prefix, so a real
-  migration nested deeper — e.g. `database/postgres/examples/migrations/*.sql`, as in
-  golang-migrate/migrate's own examples — was invisible to the detector. Every other detector's
+  migration nested deeper - e.g. `database/postgres/examples/migrations/*.sql`, as in
+  golang-migrate/migrate's own examples - was invisible to the detector. Every other detector's
   path matching was already depth-independent (basename or content-based); this was an isolated
   gap. Fixed by prefixing each pattern with `**/`. Found via real-world testing (below), not by
   any existing test.
@@ -59,20 +59,20 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 - Ran LoadBearing against real, unmodified public repositories to check for crashes and
   false positives/negatives beyond synthetic fixtures: `terraform-aws-modules/terraform-aws-vpc`
-  (Terraform — 28 true-positive resource findings across 141 changed files, 0 false positives,
+  (Terraform - 28 true-positive resource findings across 141 changed files, 0 false positives,
   60 individual commits stress-tested with 0 crashes), `GoogleCloudPlatform/microservices-demo`
-  (Kubernetes — correctly found 0 findings on a same-Deployment image-tag-only diff, correctly
+  (Kubernetes - correctly found 0 findings on a same-Deployment image-tag-only diff, correctly
   found 5 Deployments + 5 Services at the exact real commit that added them, 80 commits
-  stress-tested with 0 crashes), `wagtail/wagtail` (Django — correctly detected a real
+  stress-tested with 0 crashes), `wagtail/wagtail` (Django - correctly detected a real
   `CreateModel("APIToken")` migration, 150 commits stress-tested with 0 crashes),
-  `gin-gonic/gin` (Go — correctly flagged 2 genuinely new `go.mod` requirements while ignoring
-  version bumps and a `toolchain` directive in the same diff), `BurntSushi/ripgrep` (Rust —
+  `gin-gonic/gin` (Go - correctly flagged 2 genuinely new `go.mod` requirements while ignoring
+  version bumps and a `toolchain` directive in the same diff), `BurntSushi/ripgrep` (Rust -
   correctly flagged a new table-syntax Cargo dependency), and `golang-migrate/migrate` (the SQL
   path-matching bug above). This is meaningfully more confidence than the hand-built fixtures
   alone provided.
 - CI now runs [actionlint](https://github.com/rhysd/actionlint) (with shellcheck on inline
   `run:` scripts) against every workflow file on every push/PR. This can't replace an actual
-  live GitHub Actions run — still not possible without a real remote — but it catches invalid
+  live GitHub Actions run - still not possible without a real remote - but it catches invalid
   expressions, unknown context fields, and shell bugs statically. All four existing workflows
   (`ci.yml`, `codeql.yml`, `release.yml`, `loadbearing.yml`) currently pass with zero findings.
 
@@ -111,21 +111,21 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `db/migrate/`). On file modification, only newly added lines are scanned so pre-existing
   statements aren't re-flagged. Wired into `builtInDetectors`.
 - LB003 (New Deployable) detector: a new Kubernetes `Deployment`/`StatefulSet`/`DaemonSet`/
-  `CronJob`/`Job` object (matched by content — `apiVersion` + `kind` — not filename, since
+  `CronJob`/`Job` object (matched by content - `apiVersion` + `kind` - not filename, since
   manifests can live anywhere), a new Docker Compose service, or a new Serverless Framework
   function (MEDIUM). A newly added `Dockerfile` alone is never flagged; when a new workload also
   appears in the same change, the Dockerfile is attached to that finding as supporting evidence
   rather than generating a separate one. Wired into `builtInDetectors`.
-- LB004 (Public Contract Change) detector: OpenAPI/Swagger (matched by content, not filename —
+- LB004 (Public Contract Change) detector: OpenAPI/Swagger (matched by content, not filename -
   new endpoint MEDIUM, modified/removed endpoint HIGH, modified shared schema HIGH, using a
   key-order-independent deep comparison), Protobuf (new/changed `service`/`message`/`enum`,
   brace-depth aware so nested blocks don't break extraction), and GraphQL (new/changed
-  `type`/`input`/`interface`/`enum`/`union`) — all HIGH by default except OpenAPI's differentiated
+  `type`/`input`/`interface`/`enum`/`union`) - all HIGH by default except OpenAPI's differentiated
   table. AsyncAPI and ad hoc JSON Schema contract paths are not yet supported (documented as a
   known gap). Wired into `builtInDetectors`.
 - LB005 (Infrastructure Resource) detector: any Terraform `resource "TYPE" "NAME"` block (no
   hardcoded resource-type list), Kubernetes infrastructure objects (`Service`, `Ingress`,
-  `PersistentVolume(Claim)`, `NetworkPolicy`, `Role(Binding)`, `ClusterRole(Binding)` — sharing
+  `PersistentVolume(Claim)`, `NetworkPolicy`, `Role(Binding)`, `ClusterRole(Binding)` - sharing
   the same content-based matcher as LB003's workload detection, refactored into
   `shared/kubernetesObjects.ts`), and CloudFormation/SAM (`Resources:` entries whose `Type`
   starts with `AWS::`/`Custom::`/`Alexa::`). All HIGH by default. This completes the five
@@ -136,9 +136,9 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `pull_request_review` checkout-ref gap identified in review), runs the same core engine as the
   CLI, emits `::error`/`::warning` annotations per finding, writes a Markdown job summary, and
   fails the run (`core.setFailed`) when architecture review is required and unsatisfied. This
-  phase intentionally ignores approvals (§77 Phase 9) — every HIGH-impact PR fails regardless of
+  phase intentionally ignores approvals (§77 Phase 9) - every HIGH-impact PR fails regardless of
   reviews; approval resolution lands next. Bundled to a single `packages/action/dist/index.js`
-  via esbuild rather than `@vercel/ncc` — ncc's webpack-based CJS resolution can't handle
+  via esbuild rather than `@vercel/ncc` - ncc's webpack-based CJS resolution can't handle
   `@actions/core@3.x`'s ESM-only `exports` map, a real toolchain incompatibility, not a config
   error (esbuild is explicitly allowed by §57's "ncc or equivalent").
 - Conditional architecture approval (§77 Phase 10): `GitHubApprovalProvider` fetches PR reviews
@@ -150,15 +150,15 @@ project adheres to [Semantic Versioning](https://semver.org/).
   tested in Phase 2 is now exercised against real GitHub review data. A new lifecycle test
   reproduces §71's full integration scenario end to end against a real git repo: a schema change
   fails the check, an approval on that exact commit clears it, a follow-up commit makes that
-  approval stale and fails the check again, and a fresh approval on the new commit clears it —
+  approval stale and fails the check again, and a fresh approval on the new commit clears it -
   the explicit "do not release 0.1 before this lifecycle is demonstrably correct" bar from §71.
 - Dogfooding (§77 Phase 11): added `.loadbearing.yml` (`required_at: high`, all five detectors
-  enabled, no reviewers configured yet — there's no remote/maintainer username to authorize)
+  enabled, no reviewers configured yet - there's no remote/maintainer username to authorize)
   and `.github/workflows/loadbearing.yml` (using `uses: ./` so the check activates once this
   repo has a GitHub remote). Ran `loadbearing review` against this repository's own full commit
   history (113 changed files across 10 commits, spanning TypeScript, YAML, Markdown, JSON):
   found 8 findings, all true positives (real new dependencies added while building the tool),
-  and zero false positives from LB002–LB005 — notably including no false trigger from the
+  and zero false positives from LB002–LB005 - notably including no false trigger from the
   detector READMEs' own literal `CREATE TABLE`/Terraform/Kubernetes example text, or from test
   fixtures embedding YAML/SQL-like string literals inside `.ts` files. No detector changes were
   needed as a result.
@@ -166,7 +166,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `docs/configuration.md`, `docs/github.md`, `docs/contributing-detectors.md`, and
   `docs/roadmap.md`. A real `.github/workflows/release.yml` (build, test, verify the bundled
   Action artifact has no drift, move floating `v0`/`v0.1` tags, create a GitHub release) that
-  triggers on a `v*.*.*` tag push — replacing the earlier stub. This has not been run against a
+  triggers on a `v*.*.*` tag push - replacing the earlier stub. This has not been run against a
   live GitHub remote yet, since this repository doesn't have one; npm publication is
   intentionally left out, since §31 makes it unnecessary for the Action to function.
 

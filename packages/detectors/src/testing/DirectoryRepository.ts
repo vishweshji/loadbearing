@@ -23,7 +23,7 @@ function walk(root: string, dir: string = root): string[] {
 
 // A Repository implementation backed by two plain directories (a "before" and an "after" tree)
 // instead of git history. Used by the golden-fixture runner so fixtures are just files on disk
-// — no temporary git repository needs to be constructed per fixture.
+// - no temporary git repository needs to be constructed per fixture.
 export class DirectoryRepository implements Repository {
   readonly root: string;
   readonly baseRevision = "before";

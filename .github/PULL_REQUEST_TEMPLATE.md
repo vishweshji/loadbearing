@@ -4,7 +4,7 @@
 
 ## Scope check
 
-- [ ] This stays within LoadBearing's narrow scope (see MANIFESTO.md / ARCHITECTURE.md) — it is
+- [ ] This stays within LoadBearing's narrow scope (see MANIFESTO.md / ARCHITECTURE.md) - it is
       not adding AI-review, static-analysis, SaaS, or dashboard functionality.
 - [ ] If this changes detector behavior, fixtures were added/updated.
 - [ ] If this changes a detector README, examples and known false positives/negatives are
