@@ -78,7 +78,14 @@ export class LoadBearingEngine {
       }
     }
 
-    const effectiveFindings = applyEffectiveSeverities(rawFindings, config);
+    const detectorDefaultSeverities = new Map(
+      registry.all().map((detector) => [detector.id, detector.defaultSeverity]),
+    );
+    const effectiveFindings = applyEffectiveSeverities(
+      rawFindings,
+      config,
+      detectorDefaultSeverities,
+    );
     const survivingFindings = applySuppressions(effectiveFindings, config.suppressions);
     const impact = maximumSeverity(survivingFindings);
     const policyDecision = policyEngine.evaluate(survivingFindings, config, approvalContext);

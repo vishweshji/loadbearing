@@ -26,3 +26,18 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `.loadbearing.yml`, refuses to clobber an existing one without `--force`), `explain
   <detectorId>`, and `version`. Stable exit codes (0 pass, 1 review required, 2 invalid
   configuration, 3 analysis failure, 4 unsupported invocation/environment) per §6.
+- LB001 (New External Dependency) detector: JavaScript/TypeScript (`package.json`), Python
+  (`pyproject.toml`, `requirements.txt`/`requirements-*.txt`), Go (`go.mod`), and Rust
+  (`Cargo.toml`). Flags newly introduced direct dependencies only (not version bumps), MEDIUM
+  for runtime and LOW for development-only. Wired into `@loadbearing/detectors`'
+  `builtInDetectors`.
+
+### Fixed
+
+- `effectiveSeverity`/`applyEffectiveSeverities` no longer flatten a detector's own per-finding
+  severity variation (e.g. LB001's runtime-vs-dev split) under the default config. The default
+  config always writes an explicit `detectors.<id>.severity` line matching that detector's
+  declared default (per §10); a configured severity now only counts as a real override when it
+  differs from the detector's default, otherwise every LB001 finding was silently forced to a
+  single severity regardless of what the detector itself reported. Found via a manual end-to-end
+  CLI run against a scratch repository, not by the test suite alone.

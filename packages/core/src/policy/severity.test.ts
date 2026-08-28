@@ -28,6 +28,27 @@ describe("effectiveSeverity", () => {
     config.detectors.LB001 = { enabled: true, severity: "high" };
     expect(effectiveSeverity(finding({ severity: "medium" }), config)).toBe("high");
   });
+
+  it("does not flatten a detector's own per-finding severity under the default config", () => {
+    // Regression: defaultConfig() always writes detectors.LB001.severity: "medium" (matching
+    // LB001's own default), which must not clobber a LOW finding (e.g. a devDependency) that
+    // the detector itself downgraded from its own default.
+    const config = defaultConfig();
+    expect(config.detectors.LB001?.severity).toBe("medium");
+    expect(effectiveSeverity(finding({ severity: "low" }), config, "medium")).toBe("low");
+  });
+
+  it("treats a configured severity equal to the detector default as no override", () => {
+    const config = defaultConfig();
+    config.detectors.LB001 = { enabled: true, severity: "medium" };
+    expect(effectiveSeverity(finding({ severity: "low" }), config, "medium")).toBe("low");
+  });
+
+  it("still applies an override that genuinely differs from the detector default", () => {
+    const config = defaultConfig();
+    config.detectors.LB001 = { enabled: true, severity: "high" };
+    expect(effectiveSeverity(finding({ severity: "low" }), config, "medium")).toBe("high");
+  });
 });
 
 describe("applyEffectiveSeverities", () => {

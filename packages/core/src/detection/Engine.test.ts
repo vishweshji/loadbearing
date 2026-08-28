@@ -134,6 +134,26 @@ describe("LoadBearingEngine", () => {
     expect(result.impact).toBe("high");
   });
 
+  it("does not flatten a detector's own mixed per-finding severities under the default config", async () => {
+    // Regression: defaultConfig() writes an explicit detectors.LB001.severity: "medium" line
+    // (matching LB001's own default), which must not override a LOW finding the detector
+    // itself produced (e.g. a devDependency) back up to MEDIUM.
+    const repository = new FakeRepository([changedFile("package.json"), changedFile("go.mod")]);
+    const registry = new DetectorRegistry([
+      findingDetector("LB001", () => [
+        { ...dependencyFinding("LB001", "package.json"), severity: "low" },
+        { ...dependencyFinding("LB001", "go.mod"), severity: "medium" },
+      ]),
+    ]);
+    const config = defaultConfig();
+
+    const engine = new LoadBearingEngine({ repository, registry, config });
+    const { result } = await engine.run();
+
+    const severities = result.findings.map((f) => f.severity).sort();
+    expect(severities).toEqual(["low", "medium"]);
+  });
+
   it("removes suppressed findings before computing impact", async () => {
     const repository = new FakeRepository([changedFile("tools/package.json")]);
     const registry = new DetectorRegistry([
