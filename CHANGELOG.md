@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-28
+
 ### Added
 
 - Repository skeleton: pnpm workspaces, TypeScript project references, ESLint, Prettier,
@@ -91,6 +93,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
   detector READMEs' own literal `CREATE TABLE`/Terraform/Kubernetes example text, or from test
   fixtures embedding YAML/SQL-like string literals inside `.ts` files. No detector changes were
   needed as a result.
+- Release prep (§77 Phase 12): `docs/philosophy.md`, `docs/detectors.md`,
+  `docs/configuration.md`, `docs/github.md`, `docs/contributing-detectors.md`, and
+  `docs/roadmap.md`. A real `.github/workflows/release.yml` (build, test, verify the bundled
+  Action artifact has no drift, move floating `v0`/`v0.1` tags, create a GitHub release) that
+  triggers on a `v*.*.*` tag push — replacing the earlier stub. This has not been run against a
+  live GitHub remote yet, since this repository doesn't have one; npm publication is
+  intentionally left out, since §31 makes it unnecessary for the Action to function.
 
 ### Fixed
 

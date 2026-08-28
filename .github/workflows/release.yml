@@ -1,19 +1,73 @@
-# Deferred: per LOADBEARING.md §56/§77 Phase 12, release automation is built only after the
-# CLI and Action are implemented and dogfooded. This stub exists so the workflow file location
-# is reserved; it intentionally does not publish anything yet.
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  not-yet-implemented:
+  release:
+    name: release
     runs-on: ubuntu-latest
     steps:
-      - name: Release automation not yet implemented
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify bundled Action artifact matches source
         run: |
-          echo "Release automation lands in Phase 12 (see LOADBEARING.md §56)." >&2
-          exit 1
+          pnpm --filter @loadbearing/action run bundle
+          git diff --exit-code packages/action/dist
+
+      - name: Move floating major/minor Action tags
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          MAJOR="${TAG%%.*}"
+          MINOR="${TAG%.*}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$MAJOR" "$TAG"
+          git tag -f "$MINOR" "$TAG"
+          git push origin "$MAJOR" "$MINOR" --force
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "See CHANGELOG.md for details." \
+            --verify-tag
+
+  # npm publication is intentionally not part of this workflow. Per LOADBEARING.md §31, the
+  # bundled packages/action/dist/index.js means npm publication is never required for the
+  # GitHub Action to work. Add an npm-publish job only once package names are deliberately
+  # reserved and an NPM_TOKEN secret is configured — see docs/roadmap.md.

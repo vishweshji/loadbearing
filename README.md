@@ -43,8 +43,14 @@ See [MANIFESTO.md](./MANIFESTO.md) for why this project exists and
 
 ## Status
 
-LoadBearing is pre-release (version 0.1 in progress). The CLI and detectors described below are
-being implemented incrementally; see [CHANGELOG.md](./CHANGELOG.md) for what currently works.
+Version 0.1.0: the CLI, all five built-in detectors, and the GitHub Action (including
+conditional approval) described below are implemented and tested. This repository doesn't have
+a GitHub remote yet, so it hasn't been through a real release or a live PR — see
+[CHANGELOG.md](./CHANGELOG.md) for what's shipped and [docs/roadmap.md](./docs/roadmap.md) for
+what's next.
+
+Also see [docs/detectors.md](./docs/detectors.md), [docs/configuration.md](./docs/configuration.md),
+and [docs/github.md](./docs/github.md).
 
 ## Quick start
 
