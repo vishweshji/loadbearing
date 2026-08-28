@@ -85,7 +85,9 @@ Whenever you fix a false positive:
 
 The easiest meaningful contribution to LoadBearing is often just a fixture. If LoadBearing
 incorrectly flags or misses an architectural change, reducing the example to a reproducible
-fixture is extremely valuable, even without a code fix attached.
+fixture is extremely valuable, even without a code fix attached — see
+[fixtures/README.md](./fixtures/README.md) for the golden-fixture format, which needs no
+TypeScript: just a `fixture.yml` and two directories.
 
 ## Developer Certificate of Origin
 

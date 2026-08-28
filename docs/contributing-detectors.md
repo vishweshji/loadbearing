@@ -73,10 +73,13 @@ Every detector needs, at minimum:
 - a **deletion** fixture (a deleted file never produces a finding)
 - a **rename** fixture, where relevant
 
-These are currently expressed as inline Vitest cases building a `DetectorContext` directly (see
-any existing `tests/detector.test.ts`), not as the standalone YAML fixture format described in
-LOADBEARING.md §37 — that fixture-runner infrastructure doesn't exist yet in 0.1. If you build
-it, keep the existing inline tests working; don't require a rewrite to adopt it.
+Most of these are currently expressed as inline Vitest cases building a `DetectorContext`
+directly (see any existing `tests/detector.test.ts`) — that remains the right place for
+exhaustive per-detector edge cases. There's also a standalone golden-fixture format and runner
+(`packages/detectors/src/fixtureRunner.test.ts`, fixtures under the repo-root `fixtures/`
+directory — see [fixtures/README.md](../fixtures/README.md)) for real-world, before/after
+repository examples that don't require writing TypeScript. It currently has a small seed corpus,
+one per category; extending it is one of the most valuable low-friction contributions.
 
 ## False-positive discipline
 

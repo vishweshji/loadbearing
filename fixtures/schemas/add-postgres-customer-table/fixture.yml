@@ -1,0 +1,13 @@
+name: add-postgres-customer-table
+
+base: before
+head: after
+
+expected:
+  impact: high
+
+  findings:
+    - detector: LB002
+      severity: high
+      contains:
+        - customer_identity

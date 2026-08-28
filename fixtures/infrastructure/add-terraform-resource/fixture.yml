@@ -1,0 +1,13 @@
+name: add-terraform-resource
+
+base: before
+head: after
+
+expected:
+  impact: high
+
+  findings:
+    - detector: LB005
+      severity: high
+      contains:
+        - aws_s3_bucket.uploads

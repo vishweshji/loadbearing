@@ -1,0 +1,8 @@
+name: unrelated-refactor
+
+base: before
+head: after
+
+expected:
+  impact: none
+  findings: []

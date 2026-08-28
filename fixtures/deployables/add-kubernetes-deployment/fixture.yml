@@ -1,0 +1,13 @@
+name: add-kubernetes-deployment
+
+base: before
+head: after
+
+expected:
+  impact: high
+
+  findings:
+    - detector: LB003
+      severity: high
+      contains:
+        - identity-service

@@ -1,0 +1,13 @@
+name: add-openapi-endpoint
+
+base: before
+head: after
+
+expected:
+  impact: medium
+
+  findings:
+    - detector: LB004
+      severity: medium
+      contains:
+        - /customers

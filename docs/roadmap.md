@@ -77,9 +77,10 @@ grow into once the deterministic and semantic layers below it are solid.
 
 ## Also not yet built
 
-- The YAML golden-fixture format and runner described conceptually as part of this project's
-  testing philosophy — every detector currently has equivalent coverage as inline test cases
-  instead (see [contributing-detectors.md](./contributing-detectors.md)).
+- The YAML golden-fixture format and runner now exist (`fixtures/`, see
+  [fixtures/README.md](../fixtures/README.md)), but the corpus itself is a small seed — one
+  fixture per category. Growing it, especially with real-world examples a detector gets wrong,
+  is high-value and doesn't require touching TypeScript.
 - A community detector registry (`detectors.packages`/`detectors.local` in config) — arbitrary
   code loading changes the security model and needs its own design pass first.
 - Release automation has never actually been run against a live GitHub remote in this

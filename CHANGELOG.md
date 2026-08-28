@@ -7,7 +7,26 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- The §37 golden-fixture format and runner: `fixture.yml` (name, base/head directory names,
+  expected impact and findings with substring `contains` matching) plus two plain directory
+  trees, evaluated by `packages/detectors/src/fixtureRunner.test.ts` against the real built-in
+  detectors and engine via a new `DirectoryRepository` (diffs two directories directly — no
+  temporary git repository needed per fixture). Fixtures live at the repo root under `fixtures/`
+  organized by category (`dependencies`, `schemas`, `deployables`, `contracts`, `infrastructure`,
+  `clean`) per §30, doubling as a contributor-friendly, TypeScript-free corpus rather than
+  detector-specific test data. Seeded with one fixture per category, including
+  `schemas/add-postgres-customer-table`, named after §37's own example. See
+  `fixtures/README.md`.
+
 ### Fixed
+
+- `DirectoryRepository`'s directory walk computed each file's path relative to the directory it
+  was recursing into, not the tree root, silently dropping subdirectory prefixes (a file at
+  `after/deploy/nested/service.yaml` was reported as `service.yaml`). Caught immediately by the
+  first fixtures that used a subdirectory, before this ever reached a commit; added a direct
+  regression test for it.
 
 - **Performance**: `GitRepository.changedFiles()` spawned two `git show` subprocesses per
   changed file, sequentially — measured at ~3.3s for a 150-file PR (internal `durationMs`),

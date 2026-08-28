@@ -1,0 +1,13 @@
+name: add-new-runtime-dependency
+
+base: before
+head: after
+
+expected:
+  impact: medium
+
+  findings:
+    - detector: LB001
+      severity: medium
+      contains:
+        - "@auth0/node"

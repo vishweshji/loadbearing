@@ -1,0 +1,10 @@
+openapi: "3.0.0"
+info:
+  title: Identity API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      responses:
+        "200":
+          description: ok
