@@ -1,0 +1,19 @@
+{
+  "name": "@loadbearing/action",
+  "version": "0.1.0",
+  "description": "LoadBearing GitHub Action.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@loadbearing/core": "workspace:*",
+    "@loadbearing/detectors": "workspace:*",
+    "@actions/core": "^3.0.1",
+    "@actions/github": "^9.1.1"
+  }
+}

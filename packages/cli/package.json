@@ -1,0 +1,25 @@
+{
+  "name": "@loadbearing/cli",
+  "version": "0.1.0",
+  "description": "LoadBearing CLI.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "loadbearing": "./dist/bin.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@loadbearing/core": "workspace:*",
+    "@loadbearing/detectors": "workspace:*"
+  }
+}

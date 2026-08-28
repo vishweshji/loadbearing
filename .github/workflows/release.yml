@@ -1,0 +1,19 @@
+# Deferred: per LOADBEARING.md §56/§77 Phase 12, release automation is built only after the
+# CLI and Action are implemented and dogfooded. This stub exists so the workflow file location
+# is reserved; it intentionally does not publish anything yet.
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  not-yet-implemented:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release automation not yet implemented
+        run: |
+          echo "Release automation lands in Phase 12 (see LOADBEARING.md §56)." >&2
+          exit 1
