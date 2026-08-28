@@ -7,16 +7,16 @@ core
  ↑
 detectors
  ↑
-cli / action
+cli / action / mcp
 ```
 
 More precisely:
 
 - `core` cannot depend on `detectors`.
 - `core` cannot depend on GitHub (no Octokit, no `@actions/*`).
-- `detectors` cannot depend on `cli`.
-- `detectors` cannot depend on `action`.
-- `cli` cannot depend on `action`.
+- `detectors` cannot depend on `cli`, `action`, or `mcp`.
+- `cli`, `action`, and `mcp` cannot depend on each other — they are three independent,
+  equally-privileged front ends over `core` + `detectors`, not layered on one another.
 
 This is enforced by pnpm workspace dependency declarations (a package can only import what it
 declares as a dependency) and should additionally be enforced by lint/CI boundary checks as the
@@ -52,6 +52,14 @@ output, git repository discovery, and process exit codes. No GitHub-specific cod
 Depends on `@loadbearing/core`, `@loadbearing/detectors`, `@actions/core`, `@actions/github`.
 Handles GitHub event context resolution, PR review retrieval (`GitHubApprovalProvider`), GitHub
 Actions output (annotations, job summary), and Action inputs.
+
+### `@loadbearing/mcp`
+
+Depends on `@loadbearing/core` and `@loadbearing/detectors` — not on `@loadbearing/cli`, even
+though its `review` tool overlaps with the CLI's `review` command; both are independent, thin
+front ends over the same engine rather than one wrapping the other. Exposes `review` and
+`explain` as MCP tools over stdio for Claude Code, Cursor, and other MCP clients — see
+[docs/agents.md](./docs/agents.md).
 
 ## Core engine
 

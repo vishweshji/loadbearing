@@ -19,6 +19,18 @@ project adheres to [Semantic Versioning](https://semver.org/).
   detector-specific test data. Seeded with one fixture per category, including
   `schemas/add-postgres-customer-table`, named after §37's own example. See
   `fixtures/README.md`.
+- `@loadbearing/mcp`: an MCP ([Model Context Protocol](https://modelcontextprotocol.io)) server
+  exposing `review` and `explain` as native tools for Claude Code, Cursor, and other MCP clients,
+  so an agent calls them directly instead of shelling out to the CLI and parsing text output. A
+  third independent front end over `@loadbearing/core` + `@loadbearing/detectors` (does not
+  depend on `@loadbearing/cli`), matching the existing cli/action package-boundary shape.
+  Verified both via an in-memory client/server transport (6 tests) and, manually, the actual
+  stdio subprocess a real MCP client would spawn.
+- `docs/agents.md`: how to wire LoadBearing into an AI coding agent — MCP config for Claude Code
+  and Cursor, a `CLAUDE.md`/`.cursorrules` snippet steering the agent to check architecture
+  impact before committing (and explicitly *not* to resolve a HIGH/MEDIUM finding itself by
+  editing config, adding a suppression, or self-approving), a pre-commit hook pattern, and exit
+  codes for agents driving the CLI directly.
 
 ### Fixed
 

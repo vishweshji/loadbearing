@@ -4,6 +4,7 @@
     { "path": "packages/core" },
     { "path": "packages/detectors" },
     { "path": "packages/cli" },
-    { "path": "packages/action" }
+    { "path": "packages/action" },
+    { "path": "packages/mcp" }
   ]
 }

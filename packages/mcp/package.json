@@ -1,0 +1,27 @@
+{
+  "name": "@loadbearing/mcp",
+  "version": "0.1.0",
+  "description": "LoadBearing MCP server — exposes architecture review as tools for Claude Code, Cursor, and other MCP clients.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "loadbearing-mcp": "./dist/main.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@loadbearing/core": "workspace:*",
+    "@loadbearing/detectors": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  }
+}

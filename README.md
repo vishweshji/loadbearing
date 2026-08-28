@@ -50,7 +50,7 @@ a GitHub remote yet, so it hasn't been through a real release or a live PR — s
 what's next.
 
 Also see [docs/detectors.md](./docs/detectors.md), [docs/configuration.md](./docs/configuration.md),
-and [docs/github.md](./docs/github.md).
+[docs/github.md](./docs/github.md), and [docs/agents.md](./docs/agents.md).
 
 ## Quick start
 
@@ -119,6 +119,26 @@ MED   LB001 External dependency
 
 Architecture review required.
 ```
+
+## Using it with an AI coding agent
+
+`@loadbearing/mcp` exposes `review` and `explain` as native MCP tools for Claude Code, Cursor,
+and other MCP clients, so an agent can call it directly instead of shelling out to the CLI:
+
+```json
+// .mcp.json (Claude Code) or .cursor/mcp.json (Cursor)
+{
+  "mcpServers": {
+    "loadbearing": {
+      "command": "npx",
+      "args": ["-y", "@loadbearing/mcp"]
+    }
+  }
+}
+```
+
+See [docs/agents.md](./docs/agents.md) for wiring this into `CLAUDE.md`/`.cursorrules`, a
+pre-commit hook, and driving the CLI directly for agents without MCP support.
 
 ## Local-first
 
