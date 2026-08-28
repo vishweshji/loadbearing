@@ -81,6 +81,16 @@ project adheres to [Semantic Versioning](https://semver.org/).
   fails the check, an approval on that exact commit clears it, a follow-up commit makes that
   approval stale and fails the check again, and a fresh approval on the new commit clears it —
   the explicit "do not release 0.1 before this lifecycle is demonstrably correct" bar from §71.
+- Dogfooding (§77 Phase 11): added `.loadbearing.yml` (`required_at: high`, all five detectors
+  enabled, no reviewers configured yet — there's no remote/maintainer username to authorize)
+  and `.github/workflows/loadbearing.yml` (using `uses: ./` so the check activates once this
+  repo has a GitHub remote). Ran `loadbearing review` against this repository's own full commit
+  history (113 changed files across 10 commits, spanning TypeScript, YAML, Markdown, JSON):
+  found 8 findings, all true positives (real new dependencies added while building the tool),
+  and zero false positives from LB002–LB005 — notably including no false trigger from the
+  detector READMEs' own literal `CREATE TABLE`/Terraform/Kubernetes example text, or from test
+  fixtures embedding YAML/SQL-like string literals inside `.ts` files. No detector changes were
+  needed as a result.
 
 ### Fixed
 

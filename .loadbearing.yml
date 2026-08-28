@@ -1,0 +1,33 @@
+# LoadBearing dogfoods itself: this repository is gated by its own tool.
+# See https://github.com/loadbearing-dev/loadbearing for documentation.
+
+version: 1
+
+review:
+  required_at: high
+  minimum_approvals: 1
+  require_fresh_approval: true
+
+  reviewers:
+    users: [] # add maintainer GitHub usernames here once this repo has a remote
+
+detectors:
+  LB001:
+    enabled: true
+    severity: medium
+
+  LB002:
+    enabled: true
+    severity: high
+
+  LB003:
+    enabled: true
+    severity: high
+
+  LB004:
+    enabled: true
+    severity: high
+
+  LB005:
+    enabled: true
+    severity: high
