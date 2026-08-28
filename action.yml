@@ -1,4 +1,4 @@
-name: LoadBearing
+name: LoadBearing Architecture Gate
 description: Detect architectural consequences in pull requests
 
 branding:
