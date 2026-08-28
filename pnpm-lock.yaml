@@ -77,6 +77,9 @@ importers:
       '@loadbearing/core':
         specifier: workspace:*
         version: link:../core
+      minimatch:
+        specifier: ^10.2.6
+        version: 10.2.6
       smol-toml:
         specifier: ^1.8.0
         version: 1.8.0

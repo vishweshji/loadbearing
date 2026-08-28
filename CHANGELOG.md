@@ -31,6 +31,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
   (`Cargo.toml`). Flags newly introduced direct dependencies only (not version bumps), MEDIUM
   for runtime and LOW for development-only. Wired into `@loadbearing/detectors`'
   `builtInDetectors`.
+- LB002 (Persistent Schema Change) detector: SQL migrations (`CREATE TABLE`, `ALTER TABLE ...
+  ADD COLUMN`, `CREATE TYPE`, `CREATE INDEX`, `ALTER TABLE ... ADD CONSTRAINT` under conventional
+  migration directories), Prisma (`schema.prisma`/`**/*.prisma`, new model/enum as HIGH, new
+  optional field as MEDIUM, new required field as HIGH), Django migrations
+  (`migrations.CreateModel`/`AddField`/`AlterField`), Alembic (`op.create_table`/`add_column`/
+  `alter_column`), and Rails (`create_table`/`add_column`/`change_column`/`add_reference` under
+  `db/migrate/`). On file modification, only newly added lines are scanned so pre-existing
+  statements aren't re-flagged. Wired into `builtInDetectors`.
 
 ### Fixed
 
