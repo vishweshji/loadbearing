@@ -81,7 +81,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: loadbearing-dev/loadbearing@v0
+      - uses: vishweshji/loadbearing@v0
         with:
           github-token: ${{ github.token }}
 ```
@@ -114,7 +114,7 @@ loadbearing review --base origin/main --head HEAD
 Not published yet? Run it straight from this repo:
 
 ```bash
-git clone https://github.com/loadbearing-dev/loadbearing.git && cd loadbearing
+git clone https://github.com/vishweshji/loadbearing.git && cd loadbearing
 pnpm install && pnpm build
 node packages/cli/dist/bin.js review --base HEAD~1 --head HEAD
 ```

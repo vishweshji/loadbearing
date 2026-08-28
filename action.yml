@@ -1,6 +1,10 @@
 name: LoadBearing
 description: Detect architectural consequences in pull requests
 
+branding:
+  icon: shield
+  color: gray-dark
+
 inputs:
   github-token:
     description: GitHub token used to read pull request reviews

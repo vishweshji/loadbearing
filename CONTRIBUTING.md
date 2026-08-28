@@ -7,7 +7,7 @@ proposing anything that expands what the tool does.
 ## Development setup
 
 ```bash
-git clone https://github.com/loadbearing-dev/loadbearing.git
+git clone https://github.com/vishweshji/loadbearing.git
 cd loadbearing
 pnpm install
 pnpm build

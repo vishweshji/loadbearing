@@ -1,5 +1,5 @@
 # LoadBearing dogfoods itself: this repository is gated by its own tool.
-# See https://github.com/loadbearing-dev/loadbearing for documentation.
+# See https://github.com/vishweshji/loadbearing for documentation.
 
 version: 1
 
@@ -9,7 +9,8 @@ review:
   require_fresh_approval: true
 
   reviewers:
-    users: [] # add maintainer GitHub usernames here once this repo has a remote
+    users:
+      - vishweshji
 
 detectors:
   LB001:

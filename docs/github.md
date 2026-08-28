@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: LoadBearing
-        uses: loadbearing-dev/loadbearing@v0
+        uses: vishweshji/loadbearing@v0
         with:
           github-token: ${{ github.token }}
 ```
@@ -84,7 +84,7 @@ automatically using write permission, but merge enforcement will never depend on
 The workflow runs on `pull_request`, never `pull_request_target`, and requires no repository
 secrets - `github.token`'s default permissions are sufficient to read PR reviews. This matters
 because LoadBearing itself is open source: contributors will open PRs from forks against
-`loadbearing-dev/loadbearing`, and a `pull_request_target`-based workflow would run with
+`vishweshji/loadbearing`, and a `pull_request_target`-based workflow would run with
 elevated, secret-bearing permissions against untrusted fork content, which this project
 deliberately avoids for any repository using it.
 

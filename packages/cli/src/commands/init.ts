@@ -4,7 +4,7 @@ import { EXIT_INVALID_CONFIGURATION, EXIT_OK } from "../exitCodes.js";
 import type { CommandOutcome } from "./review.js";
 
 const TEMPLATE = `# LoadBearing configuration
-# See https://github.com/loadbearing-dev/loadbearing for documentation.
+# See https://github.com/vishweshji/loadbearing for documentation.
 
 version: 1
 
