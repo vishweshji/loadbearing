@@ -39,6 +39,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `alter_column`), and Rails (`create_table`/`add_column`/`change_column`/`add_reference` under
   `db/migrate/`). On file modification, only newly added lines are scanned so pre-existing
   statements aren't re-flagged. Wired into `builtInDetectors`.
+- LB003 (New Deployable) detector: a new Kubernetes `Deployment`/`StatefulSet`/`DaemonSet`/
+  `CronJob`/`Job` object (matched by content — `apiVersion` + `kind` — not filename, since
+  manifests can live anywhere), a new Docker Compose service, or a new Serverless Framework
+  function (MEDIUM). A newly added `Dockerfile` alone is never flagged; when a new workload also
+  appears in the same change, the Dockerfile is attached to that finding as supporting evidence
+  rather than generating a separate one. Wired into `builtInDetectors`.
 
 ### Fixed
 
