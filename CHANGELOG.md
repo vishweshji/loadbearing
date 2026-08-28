@@ -70,6 +70,17 @@ project adheres to [Semantic Versioning](https://semver.org/).
   via esbuild rather than `@vercel/ncc` — ncc's webpack-based CJS resolution can't handle
   `@actions/core@3.x`'s ESM-only `exports` map, a real toolchain incompatibility, not a config
   error (esbuild is explicitly allowed by §57's "ncc or equivalent").
+- Conditional architecture approval (§77 Phase 10): `GitHubApprovalProvider` fetches PR reviews
+  via Octokit (through an injectable `ListReviewsFn`, so it's unit-testable without mocking
+  `@actions/github`), normalizing GitHub review states (`APPROVED`/`CHANGES_REQUESTED`/
+  `COMMENTED`/`DISMISSED`) into core's `ReviewApproval` and dropping `PENDING`/unrecognized
+  states and reviews with no user. `run()` now builds a real `ApprovalContext` from it and passes
+  it to the engine, so the freshness/authorized-reviewer/bot-exclusion logic already built and
+  tested in Phase 2 is now exercised against real GitHub review data. A new lifecycle test
+  reproduces §71's full integration scenario end to end against a real git repo: a schema change
+  fails the check, an approval on that exact commit clears it, a follow-up commit makes that
+  approval stale and fails the check again, and a fresh approval on the new commit clears it —
+  the explicit "do not release 0.1 before this lifecycle is demonstrably correct" bar from §71.
 
 ### Fixed
 

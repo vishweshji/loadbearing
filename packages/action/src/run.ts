@@ -1,8 +1,10 @@
 import * as core from "@actions/core";
 import { context as githubContext } from "@actions/github";
+import type { ApprovalContext, ApprovalProvider } from "@loadbearing/core";
 import { DetectorRegistry, GitRepository, LoadBearingEngine, loadConfig } from "@loadbearing/core";
 import { builtInDetectors } from "@loadbearing/detectors";
 import { emitAnnotations } from "./annotations.js";
+import { createOctokitListReviews, GitHubApprovalProvider } from "./approvalProvider.js";
 import { ensurePullRequestCommitsAvailable } from "./checkout.js";
 import { resolvePullRequestContext, type GitHubActionContext } from "./context.js";
 import { GitHubContextError } from "./errors.js";
@@ -11,6 +13,7 @@ import { renderJobSummary } from "./summary.js";
 export interface RunOptions {
   context?: GitHubActionContext;
   workspace?: string;
+  approvalProvider?: ApprovalProvider;
 }
 
 export async function run(options: RunOptions = {}): Promise<void> {
@@ -34,8 +37,24 @@ export async function run(options: RunOptions = {}): Promise<void> {
     maxFileBytes: config.limits.max_file_bytes,
   });
 
+  const token = core.getInput("github-token");
+  const approvalProvider =
+    options.approvalProvider ??
+    (token.length > 0 ? new GitHubApprovalProvider(createOctokitListReviews(token)) : undefined);
+
+  let approvalContext: ApprovalContext | undefined;
+  if (approvalProvider !== undefined) {
+    const approvals = await approvalProvider.getApprovals(prContext);
+    approvalContext = { approvals, prAuthor: prContext.author, headSha: prContext.headSha };
+  }
+
   const registry = new DetectorRegistry(builtInDetectors);
-  const engine = new LoadBearingEngine({ repository, registry, config });
+  const engine = new LoadBearingEngine({
+    repository,
+    registry,
+    config,
+    ...(approvalContext !== undefined ? { approvalContext } : {}),
+  });
   const { result } = await engine.run();
 
   emitAnnotations(result.findings);

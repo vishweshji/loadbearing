@@ -27511,6 +27511,14 @@ var __awaiter2 = function(thisArg, _arguments, P, generator) {
     step((generator = generator.apply(thisArg, _arguments || [])).next());
   });
 };
+function getAuthString(token, options) {
+  if (!token && !options.auth) {
+    throw new Error("Parameter token or opts.auth is required");
+  } else if (token && options.auth) {
+    throw new Error("Parameters token and opts.auth may not both be specified");
+  }
+  return typeof options.auth === "string" ? options.auth : `token ${token}`;
+}
 function getProxyAgent(destinationUrl) {
   const hc = new httpClient.HttpClient();
   return hc.getAgent(destinationUrl);
@@ -27528,6 +27536,19 @@ function getProxyFetch(destinationUrl) {
 }
 function getApiBaseUrl() {
   return process.env["GITHUB_API_URL"] || "https://api.github.com";
+}
+function getUserAgentWithOrchestrationId(baseUserAgent) {
+  var _a4;
+  const orchId = (_a4 = process.env["ACTIONS_ORCHESTRATION_ID"]) === null || _a4 === void 0 ? void 0 : _a4.trim();
+  if (orchId) {
+    const sanitizedId = orchId.replace(/[^a-z0-9_.-]/gi, "_");
+    const tag = `actions_orchestration_id/${sanitizedId}`;
+    if (baseUserAgent === null || baseUserAgent === void 0 ? void 0 : baseUserAgent.includes(tag))
+      return baseUserAgent;
+    const ua = baseUserAgent ? `${baseUserAgent} ` : "";
+    return `${ua}${tag}`;
+  }
+  return baseUserAgent;
 }
 
 // ../../node_modules/.pnpm/universal-user-agent@7.0.3/node_modules/universal-user-agent/index.js
@@ -31474,9 +31495,25 @@ var defaults = {
   }
 };
 var GitHub = Octokit.plugin(restEndpointMethods, paginateRest).defaults(defaults);
+function getOctokitOptions(token, options) {
+  const opts = Object.assign({}, options || {});
+  const auth2 = getAuthString(token, opts);
+  if (auth2) {
+    opts.auth = auth2;
+  }
+  const userAgent2 = getUserAgentWithOrchestrationId(opts.userAgent);
+  if (userAgent2) {
+    opts.userAgent = userAgent2;
+  }
+  return opts;
+}
 
 // ../../node_modules/.pnpm/@actions+github@9.1.1/node_modules/@actions/github/lib/github.js
 var context2 = new Context();
+function getOctokit(token, options, ...additionalPlugins) {
+  const GitHubWithPlugins = GitHub.plugin(...additionalPlugins);
+  return new GitHubWithPlugins(getOctokitOptions(token, options));
+}
 
 // ../core/dist/errors.js
 var LoadBearingError = class extends Error {
@@ -50157,6 +50194,53 @@ function emitAnnotations(findings) {
   }
 }
 
+// src/approvalProvider.ts
+function normalizeState(state) {
+  switch (state) {
+    case "APPROVED":
+      return "approved";
+    case "CHANGES_REQUESTED":
+      return "changes-requested";
+    case "COMMENTED":
+      return "commented";
+    case "DISMISSED":
+      return "dismissed";
+    default:
+      return void 0;
+  }
+}
+var GitHubApprovalProvider = class {
+  constructor(listReviews) {
+    this.listReviews = listReviews;
+  }
+  listReviews;
+  async getApprovals(pullRequest) {
+    const rawReviews = await this.listReviews(pullRequest);
+    const approvals = [];
+    for (const review of rawReviews) {
+      const state = normalizeState(review.state);
+      const reviewer = review.user?.login;
+      if (state === void 0 || reviewer === void 0) continue;
+      approvals.push({
+        reviewer,
+        state,
+        ...review.commit_id !== null ? { commitSha: review.commit_id } : {},
+        submittedAt: review.submitted_at ?? (/* @__PURE__ */ new Date(0)).toISOString()
+      });
+    }
+    return approvals;
+  }
+};
+function createOctokitListReviews(token) {
+  const octokit = getOctokit(token);
+  return async (pullRequest) => octokit.paginate(octokit.rest.pulls.listReviews, {
+    owner: pullRequest.owner,
+    repo: pullRequest.repo,
+    pull_number: pullRequest.number,
+    per_page: 100
+  });
+}
+
 // src/checkout.ts
 import { execFileSync } from "node:child_process";
 function commitExists(workspace, sha) {
@@ -50304,8 +50388,20 @@ async function run(options = {}) {
   const repository = await GitRepository.create(workspace, prContext.baseSha, prContext.headSha, {
     maxFileBytes: config2.limits.max_file_bytes
   });
+  const token = getInput("github-token");
+  const approvalProvider = options.approvalProvider ?? (token.length > 0 ? new GitHubApprovalProvider(createOctokitListReviews(token)) : void 0);
+  let approvalContext;
+  if (approvalProvider !== void 0) {
+    const approvals = await approvalProvider.getApprovals(prContext);
+    approvalContext = { approvals, prAuthor: prContext.author, headSha: prContext.headSha };
+  }
   const registry2 = new DetectorRegistry(builtInDetectors);
-  const engine = new LoadBearingEngine({ repository, registry: registry2, config: config2 });
+  const engine = new LoadBearingEngine({
+    repository,
+    registry: registry2,
+    config: config2,
+    ...approvalContext !== void 0 ? { approvalContext } : {}
+  });
   const { result } = await engine.run();
   emitAnnotations(result.findings);
   await summary.addRaw(renderJobSummary(result)).write();
