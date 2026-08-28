@@ -25,6 +25,17 @@ pnpm format       # prettier --check
 
 All four must pass before a pull request is merged.
 
+## Working on the GitHub Action
+
+`packages/action/dist/index.js` is a committed, bundled artifact — GitHub Actions runs it
+directly and never installs dependencies. After changing anything under `packages/action/src/`,
+regenerate it and commit the result:
+
+```bash
+pnpm --filter @loadbearing/action run bundle
+git diff --exit-code packages/action/dist   # CI fails if this differs
+```
+
 ## Adding a detector
 
 Built-in detectors live in `packages/detectors/src/<LBxxx-name>/` and each contain:

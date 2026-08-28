@@ -5,7 +5,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/*.d.ts", "coverage/**"],
+    ignores: ["**/dist/**", "**/lib/**", "**/node_modules/**", "**/*.d.ts", "coverage/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -14,7 +14,11 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ["eslint.config.js", "vitest.config.ts"],
+          allowDefaultProject: [
+            "eslint.config.js",
+            "vitest.config.ts",
+            "packages/*/scripts/*.js",
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
       },

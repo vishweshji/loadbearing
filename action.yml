@@ -1,0 +1,22 @@
+name: LoadBearing
+description: Detect architectural consequences in pull requests
+
+inputs:
+  github-token:
+    description: GitHub token used to read pull request reviews
+    required: false
+    default: ${{ github.token }}
+  config:
+    description: Path to the LoadBearing configuration file
+    required: false
+    default: .loadbearing.yml
+
+outputs:
+  impact:
+    description: 'Overall architecture impact: "none", "low", "medium", or "high"'
+  architecture-review-required:
+    description: Whether repository policy requires human architecture review for this PR
+
+runs:
+  using: node24
+  main: packages/action/dist/index.js

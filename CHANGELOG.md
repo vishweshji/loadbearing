@@ -59,6 +59,17 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `shared/kubernetesObjects.ts`), and CloudFormation/SAM (`Resources:` entries whose `Type`
   starts with `AWS::`/`Custom::`/`Alexa::`). All HIGH by default. This completes the five
   built-in deterministic detectors (LB001–LB005). Wired into `builtInDetectors`.
+- GitHub Action (`@loadbearing/action`, root `action.yml`): resolves `PullRequestContext` from
+  `pull_request`/`pull_request_review` event payloads, self-heals the checkout by fetching
+  `refs/pull/<n>/head` when a needed commit isn't already present locally (the
+  `pull_request_review` checkout-ref gap identified in review), runs the same core engine as the
+  CLI, emits `::error`/`::warning` annotations per finding, writes a Markdown job summary, and
+  fails the run (`core.setFailed`) when architecture review is required and unsatisfied. This
+  phase intentionally ignores approvals (§77 Phase 9) — every HIGH-impact PR fails regardless of
+  reviews; approval resolution lands next. Bundled to a single `packages/action/dist/index.js`
+  via esbuild rather than `@vercel/ncc` — ncc's webpack-based CJS resolution can't handle
+  `@actions/core@3.x`'s ESM-only `exports` map, a real toolchain incompatibility, not a config
+  error (esbuild is explicitly allowed by §57's "ncc or equivalent").
 
 ### Fixed
 

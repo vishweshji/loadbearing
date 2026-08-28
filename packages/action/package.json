@@ -5,15 +5,19 @@
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "bundle": "node scripts/bundle.js"
   },
   "dependencies": {
     "@loadbearing/core": "workspace:*",
     "@loadbearing/detectors": "workspace:*",
     "@actions/core": "^3.0.1",
     "@actions/github": "^9.1.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
