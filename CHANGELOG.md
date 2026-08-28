@@ -52,6 +52,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
   `type`/`input`/`interface`/`enum`/`union`) — all HIGH by default except OpenAPI's differentiated
   table. AsyncAPI and ad hoc JSON Schema contract paths are not yet supported (documented as a
   known gap). Wired into `builtInDetectors`.
+- LB005 (Infrastructure Resource) detector: any Terraform `resource "TYPE" "NAME"` block (no
+  hardcoded resource-type list), Kubernetes infrastructure objects (`Service`, `Ingress`,
+  `PersistentVolume(Claim)`, `NetworkPolicy`, `Role(Binding)`, `ClusterRole(Binding)` — sharing
+  the same content-based matcher as LB003's workload detection, refactored into
+  `shared/kubernetesObjects.ts`), and CloudFormation/SAM (`Resources:` entries whose `Type`
+  starts with `AWS::`/`Custom::`/`Alexa::`). All HIGH by default. This completes the five
+  built-in deterministic detectors (LB001–LB005). Wired into `builtInDetectors`.
 
 ### Fixed
 
