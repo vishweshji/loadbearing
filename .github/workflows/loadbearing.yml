@@ -15,7 +15,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write # needed for review.mode: comment (see .loadbearing.yml)
 
 jobs:
   architecture:

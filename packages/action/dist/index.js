@@ -48363,11 +48363,16 @@ var detectorConfigSchema = external_exports.object({
 var reviewersConfigSchema = external_exports.object({
   users: external_exports.array(external_exports.string()).default([])
 });
+var reviewModeSchema = external_exports.enum(["block", "comment"]);
 var reviewConfigSchema = external_exports.object({
   required_at: severitySchema.default("high"),
   minimum_approvals: external_exports.number().int().min(0).default(1),
   require_fresh_approval: external_exports.boolean().default(true),
-  reviewers: reviewersConfigSchema.default({ users: [] })
+  reviewers: reviewersConfigSchema.default({ users: [] }),
+  // "block" (default) fails the required check until an authorized reviewer approves, per §7/§71.
+  // "comment" never fails the check; the Action instead upserts an advisory PR comment. Opt-in,
+  // so existing repos keep exactly today's enforcement unless they deliberately choose otherwise.
+  mode: reviewModeSchema.default("block")
 });
 var ignoreConfigSchema = external_exports.object({
   paths: external_exports.array(external_exports.string()).default([])
@@ -48387,7 +48392,8 @@ var loadBearingConfigSchema = external_exports.object({
     required_at: "high",
     minimum_approvals: 1,
     require_fresh_approval: true,
-    reviewers: { users: [] }
+    reviewers: { users: [] },
+    mode: "block"
   }),
   detectors: external_exports.record(external_exports.string(), detectorConfigSchema).default({}),
   ignore: ignoreConfigSchema.default({ paths: [] }),
@@ -50355,6 +50361,77 @@ function ensurePullRequestCommitsAvailable(workspace, prNumber, shas) {
   );
 }
 
+// src/comment.ts
+var MARKER = "<!-- loadbearing:review-comment -->";
+function createOctokitCommentClient(token) {
+  const octokit = getOctokit(token);
+  return {
+    async list(pullRequest) {
+      const comments = await octokit.paginate(octokit.rest.issues.listComments, {
+        owner: pullRequest.owner,
+        repo: pullRequest.repo,
+        issue_number: pullRequest.number,
+        per_page: 100
+      });
+      return comments.map((c) => ({ id: c.id, body: c.body ?? "" }));
+    },
+    async create(pullRequest, body) {
+      await octokit.rest.issues.createComment({
+        owner: pullRequest.owner,
+        repo: pullRequest.repo,
+        issue_number: pullRequest.number,
+        body
+      });
+    },
+    async update(pullRequest, commentId, body) {
+      await octokit.rest.issues.updateComment({
+        owner: pullRequest.owner,
+        repo: pullRequest.repo,
+        comment_id: commentId,
+        body
+      });
+    }
+  };
+}
+function mentionList(reviewers) {
+  return reviewers.length > 0 ? reviewers.map((r) => `@${r}`).join(", ") : "a project maintainer";
+}
+function buildReviewComment(result, reviewers) {
+  const findingLines = result.findings.length > 0 ? result.findings.map((f) => `- **${f.detectorId}** ${f.description}`).join("\n") : "- (no findings listed)";
+  return [
+    MARKER,
+    `This PR introduces a load-bearing architectural change (**${result.impact.toUpperCase()}** impact). Consider getting a review from ${mentionList(reviewers)} before merging.`,
+    "",
+    "<details><summary>Findings</summary>",
+    "",
+    findingLines,
+    "",
+    "</details>",
+    "",
+    "_This is advisory and does not block merging (`review.mode: comment`)._"
+  ].join("\n");
+}
+function buildResolvedComment() {
+  return [
+    MARKER,
+    "Architecture review is no longer flagged as needed for the current version of this PR."
+  ].join("\n");
+}
+async function upsertReviewComment(client, pullRequest, result, reviewers) {
+  const comments = await client.list(pullRequest);
+  const existing = comments.find((c) => c.body.startsWith(MARKER));
+  if (result.policyDecision.architectureReviewRequired) {
+    const body = buildReviewComment(result, reviewers);
+    if (existing !== void 0) {
+      await client.update(pullRequest, existing.id, body);
+    } else {
+      await client.create(pullRequest, body);
+    }
+  } else if (existing !== void 0) {
+    await client.update(pullRequest, existing.id, buildResolvedComment());
+  }
+}
+
 // src/errors.ts
 var GitHubContextError = class extends LoadBearingError {
   code = "GITHUB_CONTEXT_ERROR";
@@ -50460,6 +50537,9 @@ function renderJobSummary(result) {
 }
 
 // src/run.ts
+function errorMessage(error52) {
+  return error52 instanceof Error ? error52.message : String(error52);
+}
 async function run(options = {}) {
   const workspace = options.workspace ?? process.env.GITHUB_WORKSPACE;
   if (workspace === void 0) {
@@ -50496,6 +50576,19 @@ async function run(options = {}) {
   await summary.addRaw(renderJobSummary(result)).write();
   setOutput("impact", result.impact);
   setOutput("architecture-review-required", result.policyDecision.architectureReviewRequired);
+  if (config2.review.mode === "comment") {
+    const commentClient = options.commentClient ?? (token.length > 0 ? createOctokitCommentClient(token) : void 0);
+    if (commentClient !== void 0) {
+      try {
+        await upsertReviewComment(commentClient, prContext, result, config2.review.reviewers.users);
+      } catch (error52) {
+        warning(
+          `Could not post the advisory review comment: ${errorMessage(error52)}. review.mode: comment requires the workflow token to have "pull-requests: write" permission.`
+        );
+      }
+    }
+    return;
+  }
   if (result.policyDecision.architectureReviewRequired && !result.policyDecision.approvalSatisfied) {
     setFailed(
       `Architecture impact: ${result.impact.toUpperCase()}. Human architecture review is required and has not been satisfied.`

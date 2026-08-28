@@ -7,6 +7,10 @@ review:
   required_at: high
   minimum_approvals: 1
   require_fresh_approval: true
+  # Advisory-only while the team gets used to this check: posts a PR comment instead of
+  # blocking merge. Switch to "block" once the false-positive rate is understood. See
+  # docs/configuration.md#reviewmode-block-vs-comment.
+  mode: comment
 
   reviewers:
     users:

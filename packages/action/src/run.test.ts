@@ -3,8 +3,27 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import type { CommentClient, PrComment } from "./comment.js";
 import type { GitHubActionContext } from "./context.js";
 import { run } from "./run.js";
+
+function fakeCommentClient(): CommentClient & { comments: PrComment[] } {
+  const comments: PrComment[] = [];
+  let nextId = 1;
+  return {
+    comments,
+    async list() {
+      return comments;
+    },
+    async create(_pr, body) {
+      comments.push({ id: nextId++, body });
+    },
+    async update(_pr, commentId, body) {
+      const existing = comments.find((c) => c.id === commentId);
+      if (existing) existing.body = body;
+    },
+  };
+}
 
 let dir: string;
 let envDir: string;
@@ -102,6 +121,46 @@ describe("run", () => {
     expect(process.exitCode).toBe(1);
     const summary = readFileSync(summaryFile, "utf8");
     expect(summary).toContain("Architecture impact: HIGH");
+    process.exitCode = originalExitCode;
+  });
+
+  it("with review.mode: comment, never fails and posts an advisory comment instead", async () => {
+    writeFileSync(
+      join(dir, ".loadbearing.yml"),
+      [
+        "version: 1",
+        "review:",
+        "  mode: comment",
+        "  reviewers:",
+        "    users:",
+        "      - alice",
+      ].join("\n"),
+    );
+
+    git(dir, ["checkout", "-b", "feature"]);
+    mkdirSync(join(dir, "db", "migrations"), { recursive: true });
+    writeFileSync(
+      join(dir, "db/migrations/001.sql"),
+      "CREATE TABLE customer_identity (id UUID);\n",
+    );
+    git(dir, ["add", "."]);
+    git(dir, ["commit", "-m", "add migration"]);
+
+    const baseSha = git(dir, ["rev-parse", "main"]);
+    const headSha = git(dir, ["rev-parse", "feature"]);
+
+    const originalExitCode = process.exitCode;
+    const commentClient = fakeCommentClient();
+    await run({
+      workspace: dir,
+      context: fixtureContext({ baseSha, headSha }),
+      commentClient,
+    });
+
+    expect(process.exitCode).not.toBe(1);
+    expect(commentClient.comments).toHaveLength(1);
+    expect(commentClient.comments[0]?.body).toContain("@alice");
+    expect(commentClient.comments[0]?.body).toContain("does not block merging");
     process.exitCode = originalExitCode;
   });
 });

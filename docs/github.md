@@ -74,10 +74,23 @@ fetches `refs/pull/<number>/head` itself before analyzing.
 
 ## Permissions
 
-The Action needs only `contents: read` and `pull-requests: read`. It never requests
-`pull-requests: write` - reading PR reviews to evaluate whether approval requirements are met
-doesn't require writing anything back. A future optional mode may request reviewers
-automatically using write permission, but merge enforcement will never depend on it.
+By default the Action needs only `contents: read` and `pull-requests: read` - reading PR
+reviews to evaluate whether approval requirements are met doesn't require writing anything back,
+and merge enforcement (`review.mode: block`) never depends on write access.
+
+The one optional exception is `review.mode: comment` (see
+[docs/configuration.md](./configuration.md#reviewmode-block-vs-comment)), which posts an
+advisory PR comment and needs `pull-requests: write` for that alone:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write # only if you're using review.mode: comment
+```
+
+If you set `mode: comment` without granting write access, LoadBearing logs a warning and
+continues rather than failing the run - the comment is a nice-to-have, not something merge
+enforcement depends on, since in `comment` mode nothing is being enforced in the first place.
 
 ## Fork PRs
 

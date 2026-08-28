@@ -15,9 +15,10 @@ review:
   required_at: high # low | medium | high - findings at or above this impact require review
   minimum_approvals: 1 # how many qualifying approvals are needed
   require_fresh_approval: true # an approval only counts if submitted on the current head SHA
+  mode: block # block (default) fails the required check; comment posts an advisory PR comment instead
 
   reviewers:
-    users: [] # GitHub usernames authorized to satisfy architecture review
+    users: [] # GitHub usernames authorized to satisfy architecture review, and mentioned in comment mode
 
 detectors:
   LB001:
@@ -41,6 +42,27 @@ suppressions:
     path: tools/package.json
     reason: Development tooling dependencies do not affect runtime architecture.
 ```
+
+## `review.mode`: block vs. comment
+
+`block` (the default) is the behavior the rest of this project's docs describe: the required
+check fails until an authorized reviewer approves the current commit. This is what actually
+gates merging — see [docs/github.md](./github.md).
+
+`comment` is a softer, opt-in alternative for teams easing into the tool: the check never fails
+because of an architecture finding, and instead LoadBearing posts (and keeps updated in place,
+rather than reposting) a single PR comment along the lines of "this PR introduces a load-bearing
+architectural change, consider getting a review from @alice, @bob" whenever
+`architectureReviewRequired` is true. It's advisory only — nothing about `comment` mode affects
+whether the PR can be merged. If a later commit resolves the finding, the same comment is
+updated to say so rather than left stale. This needs the workflow's `github-token` to have
+`pull-requests: write` (the default `contents: read` / `pull-requests: read` setup is
+sufficient for `block` mode, but not for posting or editing a comment) — if it's missing,
+LoadBearing logs a warning and continues rather than failing the run over an optional feature.
+
+There's no in-between: it's a whole-repository setting, not per-detector or per-severity. Start
+in `comment` mode to see what LoadBearing would have flagged with no risk of blocking anyone,
+then switch to `block` once you trust the signal.
 
 ## Severity overrides are per detector, not per finding
 

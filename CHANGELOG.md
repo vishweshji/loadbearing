@@ -7,75 +7,6 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- The §37 golden-fixture format and runner: `fixture.yml` (name, base/head directory names,
-  expected impact and findings with substring `contains` matching) plus two plain directory
-  trees, evaluated by `packages/detectors/src/fixtureRunner.test.ts` against the real built-in
-  detectors and engine via a new `DirectoryRepository` (diffs two directories directly - no
-  temporary git repository needed per fixture). Fixtures live at the repo root under `fixtures/`
-  organized by category (`dependencies`, `schemas`, `deployables`, `contracts`, `infrastructure`,
-  `clean`) per §30, doubling as a contributor-friendly, TypeScript-free corpus rather than
-  detector-specific test data. Seeded with one fixture per category, including
-  `schemas/add-postgres-customer-table`, named after §37's own example. See
-  `fixtures/README.md`.
-- `@loadbearing/mcp`: an MCP ([Model Context Protocol](https://modelcontextprotocol.io)) server
-  exposing `review` and `explain` as native tools for Claude Code, Cursor, and other MCP clients,
-  so an agent calls them directly instead of shelling out to the CLI and parsing text output. A
-  third independent front end over `@loadbearing/core` + `@loadbearing/detectors` (does not
-  depend on `@loadbearing/cli`), matching the existing cli/action package-boundary shape.
-  Verified both via an in-memory client/server transport (6 tests) and, manually, the actual
-  stdio subprocess a real MCP client would spawn.
-- `docs/agents.md`: how to wire LoadBearing into an AI coding agent - MCP config for Claude Code
-  and Cursor, a `CLAUDE.md`/`.cursorrules` snippet steering the agent to check architecture
-  impact before committing (and explicitly *not* to resolve a HIGH/MEDIUM finding itself by
-  editing config, adding a suppression, or self-approving), a pre-commit hook pattern, and exit
-  codes for agents driving the CLI directly.
-
-### Fixed
-
-- `DirectoryRepository`'s directory walk computed each file's path relative to the directory it
-  was recursing into, not the tree root, silently dropping subdirectory prefixes (a file at
-  `after/deploy/nested/service.yaml` was reported as `service.yaml`). Caught immediately by the
-  first fixtures that used a subdirectory, before this ever reached a commit; added a direct
-  regression test for it.
-
-- **Performance**: `GitRepository.changedFiles()` spawned two `git show` subprocesses per
-  changed file, sequentially - measured at ~3.3s for a 150-file PR (internal `durationMs`),
-  well over the §39 target of <2s for under 100 files, with process-spawn overhead as the
-  dominant cost, not I/O. Replaced with a single long-lived `git cat-file --batch` process
-  (`packages/core/src/repository/catFileBatch.ts`) that serves all object reads for one
-  `changedFiles()` call without a per-object spawn. Same 150-file PR now completes in ~86ms
-  (~38x), and a 500-file PR in ~240ms.
-- **LB002 SQL migration path matching**: the glob patterns (`migrations/**`,
-  `db/migrations/**`, etc.) only matched a migrations directory at a fixed prefix, so a real
-  migration nested deeper - e.g. `database/postgres/examples/migrations/*.sql`, as in
-  golang-migrate/migrate's own examples - was invisible to the detector. Every other detector's
-  path matching was already depth-independent (basename or content-based); this was an isolated
-  gap. Fixed by prefixing each pattern with `**/`. Found via real-world testing (below), not by
-  any existing test.
-
-### Verified
-
-- Ran LoadBearing against real, unmodified public repositories to check for crashes and
-  false positives/negatives beyond synthetic fixtures: `terraform-aws-modules/terraform-aws-vpc`
-  (Terraform - 28 true-positive resource findings across 141 changed files, 0 false positives,
-  60 individual commits stress-tested with 0 crashes), `GoogleCloudPlatform/microservices-demo`
-  (Kubernetes - correctly found 0 findings on a same-Deployment image-tag-only diff, correctly
-  found 5 Deployments + 5 Services at the exact real commit that added them, 80 commits
-  stress-tested with 0 crashes), `wagtail/wagtail` (Django - correctly detected a real
-  `CreateModel("APIToken")` migration, 150 commits stress-tested with 0 crashes),
-  `gin-gonic/gin` (Go - correctly flagged 2 genuinely new `go.mod` requirements while ignoring
-  version bumps and a `toolchain` directive in the same diff), `BurntSushi/ripgrep` (Rust -
-  correctly flagged a new table-syntax Cargo dependency), and `golang-migrate/migrate` (the SQL
-  path-matching bug above). This is meaningfully more confidence than the hand-built fixtures
-  alone provided.
-- CI now runs [actionlint](https://github.com/rhysd/actionlint) (with shellcheck on inline
-  `run:` scripts) against every workflow file on every push/PR. This can't replace an actual
-  live GitHub Actions run - still not possible without a real remote - but it catches invalid
-  expressions, unknown context fields, and shell bugs statically. All four existing workflows
-  (`ci.yml`, `codeql.yml`, `release.yml`, `loadbearing.yml`) currently pass with zero findings.
-
 ## [0.1.0] - 2026-08-28
 
 ### Added
@@ -129,46 +60,72 @@ project adheres to [Semantic Versioning](https://semver.org/).
   the same content-based matcher as LB003's workload detection, refactored into
   `shared/kubernetesObjects.ts`), and CloudFormation/SAM (`Resources:` entries whose `Type`
   starts with `AWS::`/`Custom::`/`Alexa::`). All HIGH by default. This completes the five
-  built-in deterministic detectors (LB001–LB005). Wired into `builtInDetectors`.
+  built-in deterministic detectors (LB001-LB005). Wired into `builtInDetectors`.
 - GitHub Action (`@loadbearing/action`, root `action.yml`): resolves `PullRequestContext` from
   `pull_request`/`pull_request_review` event payloads, self-heals the checkout by fetching
   `refs/pull/<n>/head` when a needed commit isn't already present locally (the
   `pull_request_review` checkout-ref gap identified in review), runs the same core engine as the
   CLI, emits `::error`/`::warning` annotations per finding, writes a Markdown job summary, and
-  fails the run (`core.setFailed`) when architecture review is required and unsatisfied. This
-  phase intentionally ignores approvals (§77 Phase 9) - every HIGH-impact PR fails regardless of
-  reviews; approval resolution lands next. Bundled to a single `packages/action/dist/index.js`
-  via esbuild rather than `@vercel/ncc` - ncc's webpack-based CJS resolution can't handle
-  `@actions/core@3.x`'s ESM-only `exports` map, a real toolchain incompatibility, not a config
-  error (esbuild is explicitly allowed by §57's "ncc or equivalent").
-- Conditional architecture approval (§77 Phase 10): `GitHubApprovalProvider` fetches PR reviews
-  via Octokit (through an injectable `ListReviewsFn`, so it's unit-testable without mocking
+  fails the run (`core.setFailed`) when architecture review is required and unsatisfied.
+  Bundled to a single `packages/action/dist/index.js` via esbuild rather than `@vercel/ncc` -
+  ncc's webpack-based CJS resolution can't handle `@actions/core@3.x`'s ESM-only `exports` map, a
+  real toolchain incompatibility, not a config error (esbuild is explicitly allowed by §57's "ncc
+  or equivalent").
+- Conditional architecture approval: `GitHubApprovalProvider` fetches PR reviews via Octokit
+  (through an injectable `ListReviewsFn`, so it's unit-testable without mocking
   `@actions/github`), normalizing GitHub review states (`APPROVED`/`CHANGES_REQUESTED`/
   `COMMENTED`/`DISMISSED`) into core's `ReviewApproval` and dropping `PENDING`/unrecognized
-  states and reviews with no user. `run()` now builds a real `ApprovalContext` from it and passes
-  it to the engine, so the freshness/authorized-reviewer/bot-exclusion logic already built and
-  tested in Phase 2 is now exercised against real GitHub review data. A new lifecycle test
-  reproduces §71's full integration scenario end to end against a real git repo: a schema change
-  fails the check, an approval on that exact commit clears it, a follow-up commit makes that
-  approval stale and fails the check again, and a fresh approval on the new commit clears it -
-  the explicit "do not release 0.1 before this lifecycle is demonstrably correct" bar from §71.
-- Dogfooding (§77 Phase 11): added `.loadbearing.yml` (`required_at: high`, all five detectors
-  enabled, no reviewers configured yet - there's no remote/maintainer username to authorize)
-  and `.github/workflows/loadbearing.yml` (using `uses: ./` so the check activates once this
-  repo has a GitHub remote). Ran `loadbearing review` against this repository's own full commit
-  history (113 changed files across 10 commits, spanning TypeScript, YAML, Markdown, JSON):
-  found 8 findings, all true positives (real new dependencies added while building the tool),
-  and zero false positives from LB002–LB005 - notably including no false trigger from the
-  detector READMEs' own literal `CREATE TABLE`/Terraform/Kubernetes example text, or from test
-  fixtures embedding YAML/SQL-like string literals inside `.ts` files. No detector changes were
-  needed as a result.
-- Release prep (§77 Phase 12): `docs/philosophy.md`, `docs/detectors.md`,
-  `docs/configuration.md`, `docs/github.md`, `docs/contributing-detectors.md`, and
-  `docs/roadmap.md`. A real `.github/workflows/release.yml` (build, test, verify the bundled
-  Action artifact has no drift, move floating `v0`/`v0.1` tags, create a GitHub release) that
-  triggers on a `v*.*.*` tag push - replacing the earlier stub. This has not been run against a
-  live GitHub remote yet, since this repository doesn't have one; npm publication is
-  intentionally left out, since §31 makes it unnecessary for the Action to function.
+  states and reviews with no user. `run()` builds a real `ApprovalContext` from it, so the
+  freshness/authorized-reviewer/bot-exclusion logic is exercised against real GitHub review
+  data. A lifecycle test reproduces §71's full integration scenario end to end against a real
+  git repo: a schema change fails the check, an approval on that exact commit clears it, a
+  follow-up commit makes that approval stale and fails the check again, and a fresh approval on
+  the new commit clears it - the explicit "do not release 0.1 before this lifecycle is
+  demonstrably correct" bar from §71.
+- Dogfooding: `.loadbearing.yml` and `.github/workflows/loadbearing.yml` (using `uses: ./`).
+  Ran `loadbearing review` against this repository's own commit history: every finding was a
+  true positive, and zero false positives from LB002-LB005 - notably including no false trigger
+  from the detector READMEs' own literal `CREATE TABLE`/Terraform/Kubernetes example text, or
+  from test fixtures embedding YAML/SQL-like string literals inside `.ts` files.
+- Documentation: `docs/philosophy.md`, `docs/detectors.md`, `docs/configuration.md`,
+  `docs/github.md`, `docs/contributing-detectors.md`, `docs/roadmap.md`, `docs/agents.md`. A
+  real `.github/workflows/release.yml` (build, test, verify the bundled Action artifact has no
+  drift, move floating `v0`/`v0.1` tags, create a GitHub release) triggers on a `v*.*.*` tag
+  push. npm publication is intentionally left out of it, since §31 makes it unnecessary for the
+  Action to function.
+- The §37 golden-fixture format and runner: `fixture.yml` (name, base/head directory names,
+  expected impact and findings with substring `contains` matching) plus two plain directory
+  trees, evaluated by `packages/detectors/src/fixtureRunner.test.ts` against the real built-in
+  detectors and engine via a new `DirectoryRepository` (diffs two directories directly - no
+  temporary git repository needed per fixture). Fixtures live at the repo root under `fixtures/`
+  organized by category (`dependencies`, `schemas`, `deployables`, `contracts`, `infrastructure`,
+  `clean`) per §30, doubling as a contributor-friendly, TypeScript-free corpus rather than
+  detector-specific test data. Seeded with one fixture per category, including
+  `schemas/add-postgres-customer-table`, named after §37's own example. See
+  `fixtures/README.md`.
+- `@loadbearing/mcp`: an MCP ([Model Context Protocol](https://modelcontextprotocol.io)) server
+  exposing `review` and `explain` as native tools for Claude Code, Cursor, and other MCP clients,
+  so an agent calls them directly instead of shelling out to the CLI and parsing text output. A
+  third independent front end over `@loadbearing/core` + `@loadbearing/detectors` (does not
+  depend on `@loadbearing/cli`), matching the existing cli/action package-boundary shape.
+  Verified both via an in-memory client/server transport and, manually, the actual stdio
+  subprocess a real MCP client would spawn.
+- `review.mode` config: `block` (default, unchanged behavior - the required check fails until an
+  authorized reviewer approves) or `comment`, a softer opt-in alternative that never fails the
+  check and instead upserts a single advisory PR comment ("this PR introduces a load-bearing
+  architectural change, consider getting a review from @alice, @bob") whenever review would
+  otherwise be required, updating the same comment in place - including to note resolution - as
+  the PR changes, rather than reposting or leaving it stale. Needs `pull-requests: write`; if
+  that's missing, LoadBearing logs a warning and continues rather than failing the run over an
+  optional feature. This repository's own `.loadbearing.yml` now uses `mode: comment` while its
+  signal is still being trusted.
+- `docs/agents.md`: how to wire LoadBearing into an AI coding agent - MCP config for Claude Code
+  and Cursor, a `CLAUDE.md`/`.cursorrules` snippet steering the agent to check architecture
+  impact before committing (and explicitly *not* to resolve a HIGH/MEDIUM finding itself by
+  editing config, adding a suppression, or self-approving), a pre-commit hook pattern, and exit
+  codes for agents driving the CLI directly.
+- `action.yml` `branding` (`icon: shield`, `color: gray-dark`), required for GitHub Marketplace
+  listing.
 
 ### Fixed
 
@@ -179,3 +136,55 @@ project adheres to [Semantic Versioning](https://semver.org/).
   differs from the detector's default, otherwise every LB001 finding was silently forced to a
   single severity regardless of what the detector itself reported. Found via a manual end-to-end
   CLI run against a scratch repository, not by the test suite alone.
+- `DirectoryRepository`'s directory walk computed each file's path relative to the directory it
+  was recursing into, not the tree root, silently dropping subdirectory prefixes (a file at
+  `after/deploy/nested/service.yaml` was reported as `service.yaml`). Caught immediately by the
+  first fixtures that used a subdirectory, before this ever reached a commit; added a direct
+  regression test for it.
+- **Performance**: `GitRepository.changedFiles()` spawned two `git show` subprocesses per
+  changed file, sequentially - measured at ~3.3s for a 150-file PR (internal `durationMs`),
+  well over the §39 target of <2s for under 100 files, with process-spawn overhead as the
+  dominant cost, not I/O. Replaced with a single long-lived `git cat-file --batch` process
+  (`packages/core/src/repository/catFileBatch.ts`) that serves all object reads for one
+  `changedFiles()` call without a per-object spawn. Same 150-file PR now completes in ~86ms
+  (~38x), and a 500-file PR in ~240ms.
+- **LB002 SQL migration path matching**: the glob patterns (`migrations/**`,
+  `db/migrations/**`, etc.) only matched a migrations directory at a fixed prefix, so a real
+  migration nested deeper - e.g. `database/postgres/examples/migrations/*.sql`, as in
+  golang-migrate/migrate's own examples - was invisible to the detector. Every other detector's
+  path matching was already depth-independent (basename or content-based); this was an isolated
+  gap. Fixed by prefixing each pattern with `**/`. Found via real-world testing, not by any
+  existing test.
+- **Marketplace publish rejection**: `action.yml`'s `name: LoadBearing` collided with an
+  existing, unrelated GitHub user account (`github.com/loadbearing`) - the actual Marketplace
+  uniqueness rule blocks a name matching any existing action, user, org, or Marketplace
+  category, not just other published actions, which an earlier Marketplace-search-only check
+  missed. Renamed to `LoadBearing Architecture Gate`; being multi-word, it can't collide with a
+  GitHub username. Also updated all "loadbearing-dev/loadbearing" placeholder references
+  (README, CONTRIBUTING, docs/github.md, the `loadbearing init` template, `.loadbearing.yml`) to
+  the real repository, `vishweshji/loadbearing`.
+
+### Verified
+
+- Ran LoadBearing against real, unmodified public repositories to check for crashes and
+  false positives/negatives beyond synthetic fixtures: `terraform-aws-modules/terraform-aws-vpc`
+  (Terraform - 28 true-positive resource findings across 141 changed files, 0 false positives,
+  60 individual commits stress-tested with 0 crashes), `GoogleCloudPlatform/microservices-demo`
+  (Kubernetes - correctly found 0 findings on a same-Deployment image-tag-only diff, correctly
+  found 5 Deployments + 5 Services at the exact real commit that added them, 80 commits
+  stress-tested with 0 crashes), `wagtail/wagtail` (Django - correctly detected a real
+  `CreateModel("APIToken")` migration, 150 commits stress-tested with 0 crashes),
+  `gin-gonic/gin` (Go - correctly flagged 2 genuinely new `go.mod` requirements while ignoring
+  version bumps and a `toolchain` directive in the same diff), `BurntSushi/ripgrep` (Rust -
+  correctly flagged a new table-syntax Cargo dependency), and `golang-migrate/migrate` (the SQL
+  path-matching bug above). This is meaningfully more confidence than the hand-built fixtures
+  alone provided.
+- CI now runs [actionlint](https://github.com/rhysd/actionlint) (with shellcheck on inline
+  `run:` scripts) against every workflow file on every push/PR. This can't replace an actual
+  live GitHub Actions run, but it catches invalid expressions, unknown context fields, and shell
+  bugs statically. All four workflows (`ci.yml`, `codeql.yml`, `release.yml`, `loadbearing.yml`)
+  pass with zero findings.
+- `node24` (already used in `action.yml`'s `runs.using`) and the Marketplace name
+  `loadbearing`/`LoadBearing Architecture Gate` were confirmed, not assumed, before relying on
+  them - the former is GitHub's current supported and recommended Action runtime, the latter has
+  no existing collision.

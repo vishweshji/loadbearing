@@ -12,11 +12,17 @@ export const reviewersConfigSchema = z.object({
   users: z.array(z.string()).default([]),
 });
 
+export const reviewModeSchema = z.enum(["block", "comment"]);
+
 export const reviewConfigSchema = z.object({
   required_at: severitySchema.default("high"),
   minimum_approvals: z.number().int().min(0).default(1),
   require_fresh_approval: z.boolean().default(true),
   reviewers: reviewersConfigSchema.default({ users: [] }),
+  // "block" (default) fails the required check until an authorized reviewer approves, per §7/§71.
+  // "comment" never fails the check; the Action instead upserts an advisory PR comment. Opt-in,
+  // so existing repos keep exactly today's enforcement unless they deliberately choose otherwise.
+  mode: reviewModeSchema.default("block"),
 });
 
 export const ignoreConfigSchema = z.object({
@@ -41,6 +47,7 @@ export const loadBearingConfigSchema = z.object({
     minimum_approvals: 1,
     require_fresh_approval: true,
     reviewers: { users: [] },
+    mode: "block",
   }),
   detectors: z.record(z.string(), detectorConfigSchema).default({}),
   ignore: ignoreConfigSchema.default({ paths: [] }),

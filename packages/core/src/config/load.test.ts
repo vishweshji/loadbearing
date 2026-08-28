@@ -19,7 +19,18 @@ describe("loadConfig", () => {
   it("returns the built-in default when no config file exists", () => {
     const config = loadConfig(dir);
     expect(config.review.required_at).toBe("high");
+    expect(config.review.mode).toBe("block");
     expect(Object.keys(config.detectors)).toEqual(["LB001", "LB002", "LB003", "LB004", "LB005"]);
+  });
+
+  it("loads review.mode: comment when configured", () => {
+    writeFileSync(
+      join(dir, ".loadbearing.yml"),
+      ["version: 1", "review:", "  mode: comment"].join("\n"),
+    );
+
+    const config = loadConfig(dir);
+    expect(config.review.mode).toBe("comment");
   });
 
   it("loads and validates a well-formed .loadbearing.yml", () => {

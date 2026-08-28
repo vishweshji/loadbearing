@@ -6,6 +6,7 @@ import { builtInDetectors } from "@loadbearing/detectors";
 import { emitAnnotations } from "./annotations.js";
 import { createOctokitListReviews, GitHubApprovalProvider } from "./approvalProvider.js";
 import { ensurePullRequestCommitsAvailable } from "./checkout.js";
+import { createOctokitCommentClient, upsertReviewComment, type CommentClient } from "./comment.js";
 import { resolvePullRequestContext, type GitHubActionContext } from "./context.js";
 import { GitHubContextError } from "./errors.js";
 import { renderJobSummary } from "./summary.js";
@@ -14,6 +15,11 @@ export interface RunOptions {
   context?: GitHubActionContext;
   workspace?: string;
   approvalProvider?: ApprovalProvider;
+  commentClient?: CommentClient;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function run(options: RunOptions = {}): Promise<void> {
@@ -62,6 +68,22 @@ export async function run(options: RunOptions = {}): Promise<void> {
 
   core.setOutput("impact", result.impact);
   core.setOutput("architecture-review-required", result.policyDecision.architectureReviewRequired);
+
+  if (config.review.mode === "comment") {
+    const commentClient =
+      options.commentClient ?? (token.length > 0 ? createOctokitCommentClient(token) : undefined);
+    if (commentClient !== undefined) {
+      try {
+        await upsertReviewComment(commentClient, prContext, result, config.review.reviewers.users);
+      } catch (error) {
+        core.warning(
+          `Could not post the advisory review comment: ${errorMessage(error)}. review.mode: ` +
+            'comment requires the workflow token to have "pull-requests: write" permission.',
+        );
+      }
+    }
+    return;
+  }
 
   if (
     result.policyDecision.architectureReviewRequired &&
