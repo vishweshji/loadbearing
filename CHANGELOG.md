@@ -45,6 +45,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
   function (MEDIUM). A newly added `Dockerfile` alone is never flagged; when a new workload also
   appears in the same change, the Dockerfile is attached to that finding as supporting evidence
   rather than generating a separate one. Wired into `builtInDetectors`.
+- LB004 (Public Contract Change) detector: OpenAPI/Swagger (matched by content, not filename —
+  new endpoint MEDIUM, modified/removed endpoint HIGH, modified shared schema HIGH, using a
+  key-order-independent deep comparison), Protobuf (new/changed `service`/`message`/`enum`,
+  brace-depth aware so nested blocks don't break extraction), and GraphQL (new/changed
+  `type`/`input`/`interface`/`enum`/`union`) — all HIGH by default except OpenAPI's differentiated
+  table. AsyncAPI and ad hoc JSON Schema contract paths are not yet supported (documented as a
+  known gap). Wired into `builtInDetectors`.
 
 ### Fixed
 
